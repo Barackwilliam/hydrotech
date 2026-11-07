@@ -1,0 +1,32 @@
+{% extends "website/base.html" %}
+{% load site_tags %}
+{% block title %}{{ t.services_title }} — {{ company.name }}{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div class="container">
+    <h1>{{ t.services_title }}</h1>
+    <p>{{ t.services_lead }}</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container service-list">
+    {% for s in services %}
+    <article class="service-row reveal">
+      <a class="service-row__img" href="{{ s.get_absolute_url }}">
+        {% if s.image %}<img src="{{ s.image.url }}" alt="{% tr s 'title' %}" loading="lazy">{% else %}<span class="service-row__ph">{% icon s.icon 56 %}</span>{% endif %}
+      </a>
+      <div class="service-row__body">
+        <span class="card__icon">{% icon s.icon 24 %}</span>
+        <h2><a href="{{ s.get_absolute_url }}">{% tr s "title" %}</a></h2>
+        <p>{% tr s "summary" %}</p>
+        <a class="link" href="{{ s.get_absolute_url }}">{{ t.read_more }} {% icon "arrow" 16 %}</a>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+{% include "website/_cta.html" %}
+{% endblock %}

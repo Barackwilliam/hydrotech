@@ -1,0 +1,58 @@
+{% extends "website/base.html" %}
+{% load site_tags %}
+{% block title %}{% tr service "title" %} — {{ company.name }}{% endblock %}
+{% block description %}{% tr service "summary" %}{% endblock %}
+{% block og_title %}{% tr service "title" %} — {{ company.name }}{% endblock %}
+
+{% block content %}
+<section class="page-head" {% if service.image %}style="--hero: url('{{ service.image.url }}')"{% endif %}>
+  <div class="container">
+    <p class="crumbs"><a href="{% url 'services' %}">{{ t.nav_services }}</a> /</p>
+    <h1>{% tr service "title" %}</h1>
+    <p>{% tr service "summary" %}</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container split split--detail">
+    <div class="prose">
+      {% tr_paragraphs service "body" %}
+      {% tr_lines service "steps" as steps %}
+      {% if steps %}
+      <h2>{{ t.service_steps }}</h2>
+      <ol class="checklist">
+        {% for line in steps %}<li>{{ line }}</li>{% endfor %}
+      </ol>
+      {% endif %}
+      <p><a class="btn btn--accent" href="{% url 'contact' %}?service={{ service.slug }}">{{ t.cta_quote }} {% icon "arrow" 18 %}</a></p>
+    </div>
+    <aside class="side">
+      {% if service.image %}<img class="side__img" src="{{ service.image.url }}" alt="{% tr service 'title' %}" loading="lazy">{% endif %}
+      <div class="side__box">
+        <h3>{{ t.other_services }}</h3>
+        <ul>
+          {% for s in others %}<li><a href="{{ s.get_absolute_url }}">{% icon s.icon 18 %} {% tr s "title" %}</a></li>{% endfor %}
+        </ul>
+      </div>
+    </aside>
+  </div>
+</section>
+
+{% if projects %}
+<section class="section section--tint">
+  <div class="container">
+    <header class="section__head"><h2>{{ t.service_projects }}</h2></header>
+    <div class="gallery">
+      {% for p in projects %}
+      <a class="gallery__item" href="{{ p.image.url }}" data-lightbox data-caption="{% tr p 'title' %}">
+        <img src="{{ p.image.url }}" alt="{% tr p 'title' %}" loading="lazy">
+        <span class="gallery__cap">{% tr p "title" %}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% include "website/_cta.html" %}
+{% endblock %}

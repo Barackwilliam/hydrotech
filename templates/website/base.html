@@ -1,0 +1,127 @@
+{% load static site_tags %}<!doctype html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ company.name }} — {% tr company "tagline" %}{% endblock %}</title>
+  <meta name="description" content="{% block description %}{% tr company "tagline" %}{% endblock %}">
+  <meta name="theme-color" content="#0a2a4a">
+  <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{ company.name }}">
+  <meta property="og:title" content="{% block og_title %}{{ company.name }}{% endblock %}">
+  <meta property="og:description" content="{% tr company "tagline" %}">
+  {% if company.hero_image %}<meta property="og:image" content="{{ company.hero_image.url }}">{% endif %}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/site.css' %}">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "{{ company.name|escapejs }}",
+    "description": "{% tr company 'tagline' as tagline %}{{ tagline|escapejs }}",
+    "url": "{{ site_url }}",
+    {% if company.hero_image %}"image": "{{ company.hero_image.url }}",{% endif %}
+    "telephone": "{{ company.phone_1_tel }}",
+    {% if company.email %}"email": "{{ company.email }}",{% endif %}
+    "address": {"@type": "PostalAddress", "addressLocality": "Mafinga", "addressRegion": "Iringa", "addressCountry": "TZ"},
+    "areaServed": ["Mbeya", "Njombe", "Iringa", "Dodoma", "Singida"]
+  }
+  </script>
+  {% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <a class="skip" href="#main">Skip</a>
+
+  <div class="topbar">
+    <div class="container topbar__inner">
+      <span>{% icon "pin" 16 %} {% tr company "address" %}</span>
+      <span class="topbar__right">
+        {% if company.phone_1 %}<a href="tel:{{ company.phone_1_tel }}">{% icon "phone" 16 %} {{ company.phone_1 }}</a>{% endif %}
+        {% if company.email %}<a href="mailto:{{ company.email }}" class="hide-sm">{% icon "mail" 16 %} {{ company.email }}</a>{% endif %}
+      </span>
+    </div>
+  </div>
+
+  <header class="header" id="top">
+    <div class="container header__inner">
+      <a class="brand" href="{% url 'home' %}" aria-label="{{ company.name }}">
+        <img src="{% static 'img/logo.svg' %}" alt="" width="44" height="44">
+        <span class="brand__text"><strong>{{ company.name }}</strong><small>{{ t.water_is_life }}</small></span>
+      </a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav" aria-label="{{ t.menu }}">{% icon "menu" 26 %}</button>
+      <nav class="nav" id="nav">
+        {% with p=request.path %}
+        <a href="{% url 'home' %}" {% if p == '/' %}class="active"{% endif %}>{{ t.nav_home }}</a>
+        <a href="{% url 'about' %}" {% if '/kuhusu' in p %}class="active"{% endif %}>{{ t.nav_about }}</a>
+        <a href="{% url 'services' %}" {% if '/huduma' in p %}class="active"{% endif %}>{{ t.nav_services }}</a>
+        <a href="{% url 'projects' %}" {% if '/miradi' in p %}class="active"{% endif %}>{{ t.nav_projects }}</a>
+        <a href="{% url 'contact' %}" {% if '/wasiliana' in p %}class="active"{% endif %}>{{ t.nav_contact }}</a>
+        {% endwith %}
+        <a class="lang" href="{% if lang == 'sw' %}{% url 'set_language' 'en' %}{% else %}{% url 'set_language' 'sw' %}{% endif %}?next={{ request.get_full_path|urlencode }}">{% icon "globe" 18 %} {{ t.lang_switch }}</a>
+        <a class="btn btn--accent nav__cta" href="{% url 'contact' %}">{{ t.cta_quote }}</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    {% if messages %}
+    <div class="container">
+      {% for m in messages %}<div class="alert alert--{{ m.tags }}" role="status">{{ m }}</div>{% endfor %}
+    </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__grid">
+      <div>
+        <a class="brand brand--light" href="{% url 'home' %}">
+          <img src="{% static 'img/logo.svg' %}" alt="" width="44" height="44">
+          <span class="brand__text"><strong>{{ company.name }}</strong><small>{{ t.water_is_life }}</small></span>
+        </a>
+        <p class="footer__tagline">{% tr company "tagline" %}</p>
+        <div class="social">
+          {% if company.facebook_url %}<a href="{{ company.facebook_url }}" target="_blank" rel="noopener" aria-label="Facebook">{% icon "facebook" 20 %}</a>{% endif %}
+          {% if company.whatsapp_digits %}<a href="https://wa.me/{{ company.whatsapp_digits }}" target="_blank" rel="noopener" aria-label="WhatsApp">{% icon "whatsapp" 20 %}</a>{% endif %}
+        </div>
+      </div>
+      <div>
+        <h3>{{ t.nav_services }}</h3>
+        <ul class="footer__links">
+          {% for s in nav_services|slice:":6" %}<li><a href="{{ s.get_absolute_url }}">{% tr s "title" %}</a></li>{% endfor %}
+        </ul>
+      </div>
+      <div>
+        <h3>{{ t.footer_quick }}</h3>
+        <ul class="footer__links">
+          <li><a href="{% url 'about' %}">{{ t.nav_about }}</a></li>
+          <li><a href="{% url 'projects' %}">{{ t.nav_projects }}</a></li>
+          <li><a href="{% url 'contact' %}">{{ t.nav_contact }}</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>{{ t.footer_contact }}</h3>
+        <ul class="footer__contact">
+          {% if company.phone_1 %}<li>{% icon "phone" 18 %} <a href="tel:{{ company.phone_1_tel }}">{{ company.phone_1 }}</a></li>{% endif %}
+          {% if company.phone_2 %}<li>{% icon "phone" 18 %} <a href="tel:{{ company.phone_2_tel }}">{{ company.phone_2 }}</a></li>{% endif %}
+          {% if company.email %}<li>{% icon "mail" 18 %} <a href="mailto:{{ company.email }}">{{ company.email }}</a></li>{% endif %}
+          <li>{% icon "pin" 18 %} {% tr company "address" %}</li>
+          {% if company.po_box %}<li>{% icon "box" 18 %} {{ t.label_pobox }} {{ company.po_box }}</li>{% endif %}
+        </ul>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <div class="container">© <span data-year></span> {{ company.name }}. {{ t.footer_rights }}</div>
+    </div>
+  </footer>
+
+  {% if company.whatsapp_digits %}
+  <a class="wa-float" href="https://wa.me/{{ company.whatsapp_digits }}" target="_blank" rel="noopener" aria-label="WhatsApp">{% icon "whatsapp" 30 %}</a>
+  {% endif %}
+
+  <script src="{% static 'js/site.js' %}" defer></script>
+</body>
+</html>

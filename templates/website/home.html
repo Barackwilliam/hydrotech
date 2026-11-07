@@ -1,0 +1,103 @@
+{% extends "website/base.html" %}
+{% load static site_tags %}
+{% block body_class %}page-home{% endblock %}
+
+{% block content %}
+<section class="hero" {% if company.hero_image %}style="--hero: url('{{ company.hero_image.url }}')"{% endif %}>
+  <div class="container hero__inner">
+    <p class="kicker">{% icon "drop" 18 %} {{ t.hero_kicker }}</p>
+    <h1>{{ t.hero_title }}</h1>
+    <p class="hero__text">{{ t.hero_text }}</p>
+    <div class="hero__actions">
+      <a class="btn btn--accent btn--lg" href="{% url 'contact' %}">{{ t.cta_quote }} {% icon "arrow" 20 %}</a>
+      {% if company.phone_1 %}<a class="btn btn--ghost btn--lg" href="tel:{{ company.phone_1_tel }}">{% icon "phone" 20 %} {{ company.phone_1 }}</a>{% endif %}
+    </div>
+  </div>
+</section>
+
+<section class="stats">
+  <div class="container stats__grid">
+    <div class="stat"><strong>{{ services|length }}</strong><span>{{ t.stat_services }}</span></div>
+    <div class="stat"><strong>{{ regions|length }}</strong><span>{{ t.stat_regions }}</span></div>
+    {% if team_count %}<div class="stat"><strong>{{ team_count }}</strong><span>{{ t.stat_team }}</span></div>{% endif %}
+    {% if company.founded_year %}<div class="stat"><strong>{{ company.founded_year }}</strong><span>{{ t.stat_founded }}</span></div>{% endif %}
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <header class="section__head">
+      <h2>{{ t.services_title }}</h2>
+      <p>{{ t.services_lead }}</p>
+    </header>
+    <div class="cards">
+      {% for s in services %}
+      <a class="card reveal" href="{{ s.get_absolute_url }}">
+        {% if s.image %}<div class="card__img"><img src="{{ s.image.url }}" alt="{% tr s 'title' %}" loading="lazy"></div>{% else %}<div class="card__img card__img--ph">{% icon s.icon 72 %}</div>{% endif %}
+        <div class="card__body">
+          <span class="card__icon">{% icon s.icon 26 %}</span>
+          <h3>{% tr s "title" %}</h3>
+          <p>{% tr s "summary" %}</p>
+          <span class="link">{{ t.read_more }} {% icon "arrow" 16 %}</span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section section--tint">
+  <div class="container">
+    <header class="section__head">
+      <h2>{{ t.process_title }}</h2>
+    </header>
+    <ol class="steps">
+      {% for title, text in t.process %}
+      <li class="step reveal"><span class="step__num">{{ forloop.counter }}</span><h3>{{ title }}</h3><p>{{ text }}</p></li>
+      {% endfor %}
+    </ol>
+  </div>
+</section>
+
+{% if projects %}
+<section class="section">
+  <div class="container">
+    <header class="section__head">
+      <h2>{{ t.projects_title }}</h2>
+      <p>{{ t.projects_lead }}</p>
+    </header>
+    <div class="gallery">
+      {% for p in projects %}
+      <a class="gallery__item reveal" href="{{ p.image.url }}" data-lightbox data-caption="{% tr p 'title' %}{% if p.region %} — {{ p.region }}{% endif %}">
+        <img src="{{ p.image.url }}" alt="{% tr p 'title' %}" loading="lazy">
+        <span class="gallery__cap">{% tr p "title" %}</span>
+      </a>
+      {% endfor %}
+    </div>
+    <p class="center"><a class="btn btn--outline" href="{% url 'projects' %}">{{ t.see_all_projects }} {% icon "arrow" 18 %}</a></p>
+  </div>
+</section>
+{% endif %}
+
+<section class="section section--dark">
+  <div class="container split">
+    <div>
+      <h2>{{ t.why_title }}</h2>
+      <ul class="why">
+        {% for title, text in t.why %}
+        <li class="reveal"><span class="why__tick">{% icon "check" 20 %}</span><div><h3>{{ title }}</h3><p>{{ text }}</p></div></li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="regions reveal">
+      <h3>{{ t.regions_title }}</h3>
+      <ul class="chips">
+        {% for r in regions %}<li>{% icon "pin" 16 %} {{ r }}</li>{% endfor %}
+      </ul>
+      <p class="muted">{{ t.regions_lead }}</p>
+    </div>
+  </div>
+</section>
+
+{% include "website/_cta.html" %}
+{% endblock %}

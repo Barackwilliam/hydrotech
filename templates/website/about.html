@@ -1,0 +1,65 @@
+{% extends "website/base.html" %}
+{% load site_tags %}
+{% block title %}{{ t.nav_about }} — {{ company.name }}{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div class="container">
+    <h1>{{ t.about_title }}</h1>
+    <p>{% tr company "tagline" %}</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container split split--about">
+    <div class="prose">
+      {% tr_paragraphs company "about" %}
+      <ul class="facts">
+        {% if company.founded_year %}<li><strong>{{ t.stat_founded }}:</strong> {{ company.founded_year }}</li>{% endif %}
+        {% if company.ceo_name %}<li><strong>{{ t.label_ceo }}:</strong> {{ company.ceo_name }}</li>{% endif %}
+        <li><strong>{{ t.label_office }}:</strong> {% tr company "address" %}</li>
+        {% if company.po_box %}<li><strong>{{ t.label_pobox }}:</strong> {{ company.po_box }}</li>{% endif %}
+      </ul>
+    </div>
+    {% if company.about_image %}
+    <figure class="about__img reveal"><img src="{{ company.about_image.url }}" alt="{{ company.name }}" loading="lazy"></figure>
+    {% endif %}
+  </div>
+</section>
+
+{% if team %}
+<section class="section section--tint">
+  <div class="container">
+    <header class="section__head">
+      <h2>{{ t.team_title }}</h2>
+      <p>{{ t.team_lead }}</p>
+    </header>
+    <div class="team">
+      {% for m in team %}
+      <div class="member reveal">
+        {% if m.photo %}
+        <img class="member__photo" src="{{ m.photo.url }}" alt="{{ m.name }}" loading="lazy">
+        {% else %}
+        <span class="member__photo member__photo--initials" style="background: {{ m.name|initials_color }}">{{ m.initials }}</span>
+        {% endif %}
+        <h3>{{ m.name }}</h3>
+        {% tr m "role" as role %}{% if role %}<p>{{ role }}</p>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section">
+  <div class="container center">
+    <h2>{{ t.regions_title }}</h2>
+    <ul class="chips chips--center">
+      {% for r in regions %}<li>{% icon "pin" 16 %} {{ r }}</li>{% endfor %}
+    </ul>
+    <p class="muted">{{ t.regions_lead }}</p>
+  </div>
+</section>
+
+{% include "website/_cta.html" %}
+{% endblock %}

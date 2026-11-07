@@ -1,0 +1,58 @@
+{% extends "website/base.html" %}
+{% load site_tags %}
+{% block title %}{{ t.contact_title }} — {{ company.name }}{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div class="container">
+    <h1>{{ t.contact_title }}</h1>
+    <p>{{ t.contact_lead }}</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container split split--contact">
+    <form class="form" method="post" id="fomu" novalidate>
+      {% csrf_token %}
+      <div class="hp" aria-hidden="true">{{ form.website }}</div>
+      {% for field in form %}{% if field.name != "website" %}
+      <div class="field{% if field.errors %} field--error{% endif %}{% if field.name == 'message' %} field--wide{% endif %}">
+        <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
+        {{ field }}
+        {% for e in field.errors %}<small class="error">{{ e }}</small>{% endfor %}
+      </div>
+      {% endif %}{% endfor %}
+      <button class="btn btn--accent btn--lg" type="submit">{{ t.form_send }} {% icon "arrow" 20 %}</button>
+    </form>
+
+    <aside class="contact-cards">
+      {% if company.phone_1 %}
+      <a class="contact-card" href="tel:{{ company.phone_1_tel }}">
+        <span class="contact-card__icon">{% icon "phone" 24 %}</span>
+        <span><small>{{ t.label_phone }}</small>{{ company.phone_1 }}{% if company.phone_2 %}<br>{{ company.phone_2 }}{% endif %}</span>
+      </a>
+      {% endif %}
+      {% if company.whatsapp_digits %}
+      <a class="contact-card contact-card--wa" href="https://wa.me/{{ company.whatsapp_digits }}" target="_blank" rel="noopener">
+        <span class="contact-card__icon">{% icon "whatsapp" 24 %}</span>
+        <span><small>WhatsApp</small>{{ company.whatsapp|default:company.phone_1 }}</span>
+      </a>
+      {% endif %}
+      {% if company.email %}
+      <a class="contact-card" href="mailto:{{ company.email }}">
+        <span class="contact-card__icon">{% icon "mail" 24 %}</span>
+        <span><small>{{ t.label_email }}</small>{{ company.email }}</span>
+      </a>
+      {% endif %}
+      <div class="contact-card">
+        <span class="contact-card__icon">{% icon "pin" 24 %}</span>
+        <span><small>{{ t.label_office }}</small>{% tr company "address" %}{% if company.po_box %}<br>{{ t.label_pobox }} {{ company.po_box }}{% endif %}</span>
+      </div>
+      {% if company.map_query %}
+      <iframe class="map" title="Map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+        src="https://maps.google.com/maps?q={{ company.map_query|urlencode }}&z=13&output=embed"></iframe>
+      {% endif %}
+    </aside>
+  </div>
+</section>
+{% endblock %}

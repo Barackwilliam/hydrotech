@@ -1,0 +1,13 @@
+{% load site_tags %}
+<section class="cta-band">
+  <div class="container cta-band__inner">
+    <div>
+      <h2>{{ t.cta_band_title }}</h2>
+      <p>{{ t.cta_band_text }}</p>
+    </div>
+    <div class="cta-band__actions">
+      <a class="btn btn--accent btn--lg" href="{% url 'contact' %}{% if service %}?service={{ service.slug }}{% endif %}">{{ t.cta_quote }}</a>
+      {% if company.whatsapp_digits %}<a class="btn btn--ghost btn--lg" href="https://wa.me/{{ company.whatsapp_digits }}" target="_blank" rel="noopener">{% icon "whatsapp" 20 %} {{ t.cta_whatsapp }}</a>{% endif %}
+    </div>
+  </div>
+</section>

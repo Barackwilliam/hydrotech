@@ -1,0 +1,38 @@
+{% extends "website/base.html" %}
+{% load site_tags %}
+{% block title %}{{ t.projects_title }} — {{ company.name }}{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div class="container">
+    <h1>{{ t.projects_title }}</h1>
+    <p>{{ t.projects_lead }}</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    {% if projects %}
+    {% if filters|length > 1 %}
+    <div class="filters" role="group">
+      <button class="filter active" data-filter="all">{{ t.filter_all }}</button>
+      {% for s in filters %}<button class="filter" data-filter="{{ s.slug }}">{% tr s "title" %}</button>{% endfor %}
+    </div>
+    {% endif %}
+    <div class="gallery gallery--full">
+      {% for p in projects %}
+      <a class="gallery__item" href="{{ p.image.url }}" data-lightbox data-group="{{ p.service.slug|default:'' }}"
+         data-caption="{% tr p 'title' %}{% if p.place %} — {{ p.place }}{% endif %}{% if p.region %}, {{ p.region }}{% endif %}">
+        <img src="{{ p.image.url }}" alt="{% tr p 'title' %}" loading="lazy">
+        <span class="gallery__cap">{% tr p "title" %}{% if p.region %}<small>{{ p.region }}</small>{% endif %}</span>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="center muted">{{ t.no_projects }}</p>
+    {% endif %}
+  </div>
+</section>
+
+{% include "website/_cta.html" %}
+{% endblock %}

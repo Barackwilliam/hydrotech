@@ -138,6 +138,8 @@ UI = {
     "label_office": ("Ofisi kuu", "Head office"),
     "label_pobox": ("S.L.P", "P.O. Box"),
     "label_ceo": ("Mkurugenzi", "CEO"),
+    # first-visit language popup (shown in both languages at once)
+    "lang_close": ("Funga", "Close"),
     # footer
     "footer_rights": ("Haki zote zimehifadhiwa.", "All rights reserved."),
     "footer_quick": ("Viungo", "Links"),

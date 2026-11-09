@@ -96,3 +96,14 @@ class SiteTests(TestCase):
         r = self.client.get(reverse("about"))
         self.assertContains(r, "<p>Mstari wa kwanza</p>")
         self.assertContains(r, "<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>")
+
+    def test_language_popup_only_on_first_visit(self):
+        self.assertContains(self.client.get(reverse("home")), 'id="lang-modal"')
+        self.client.cookies["lang"] = "sw"
+        self.assertNotContains(self.client.get(reverse("home")), 'id="lang-modal"')
+
+    def test_choosing_english_in_popup_is_remembered(self):
+        self.client.get(reverse("set_language", args=["en"]) + "?next=/")
+        r = self.client.get(reverse("about"))
+        self.assertContains(r, 'lang="en"')
+        self.assertNotContains(r, 'id="lang-modal"')

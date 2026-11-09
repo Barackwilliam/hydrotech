@@ -74,3 +74,55 @@
     if (e.key === "ArrowRight") show(index + 1);
   });
 })();
+
+// First visit: ask for the language once the page has finished loading, and remember the answer.
+(function () {
+  var modal = document.getElementById("lang-modal");
+  if (!modal) return;
+  var current = document.documentElement.lang || "sw";
+  var lastFocus = null;
+
+  function remember(lang) {
+    document.cookie = "lang=" + lang + "; max-age=31536000; path=/; samesite=lax";
+  }
+  function open() {
+    lastFocus = document.activeElement;
+    modal.hidden = false;
+    document.body.classList.add("modal-open");
+    requestAnimationFrame(function () { modal.classList.add("open"); });
+    var first = modal.querySelector('[data-lang-pick="' + current + '"].lang-option') || modal.querySelector(".lang-option");
+    if (first) first.focus();
+  }
+  function close() {
+    modal.classList.remove("open");
+    document.body.classList.remove("modal-open");
+    setTimeout(function () { modal.hidden = true; }, 250);
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+
+  modal.addEventListener("click", function (e) {
+    var pick = e.target.closest("[data-lang-pick]");
+    if (pick) {
+      var lang = pick.getAttribute("data-lang-pick");
+      remember(lang);
+      // same language as the page: just close; the other one: follow the link to reload in that language
+      if (lang === current) { e.preventDefault(); close(); }
+      return;
+    }
+    if (e.target === modal) { remember(current); close(); }
+  });
+  document.addEventListener("keydown", function (e) {
+    if (modal.hidden) return;
+    if (e.key === "Escape") { remember(current); close(); }
+    if (e.key === "Tab") {  // keep focus inside the popup
+      var items = modal.querySelectorAll("a, button");
+      var firstEl = items[0], lastEl = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === firstEl) { e.preventDefault(); lastEl.focus(); }
+      else if (!e.shiftKey && document.activeElement === lastEl) { e.preventDefault(); firstEl.focus(); }
+    }
+  });
+
+  function later() { setTimeout(open, 500); }
+  if (document.readyState === "complete") later();
+  else window.addEventListener("load", later);
+})();

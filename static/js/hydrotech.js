@@ -4,15 +4,49 @@
   // year in the footer
   document.querySelectorAll("[data-year]").forEach(function (el) { el.textContent = new Date().getFullYear(); });
 
-  // mobile menu
+  // header: transparent over the dark top of the page, solid once the page scrolls
+  var header = document.querySelector(".header");
+  function onScroll() { if (header) header.classList.toggle("is-scrolled", window.scrollY > 24); }
+  onScroll();
+  window.addEventListener("scroll", onScroll, { passive: true });
+
+  // mobile menu (full screen)
   var toggle = document.querySelector(".nav-toggle");
   var nav = document.getElementById("nav");
   if (toggle && nav) {
-    toggle.addEventListener("click", function () {
-      var open = nav.classList.toggle("open");
+    var menuIcon = toggle.innerHTML;
+    var closeIcon = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+    function setNav(open) {
+      nav.classList.toggle("open", open);
+      document.body.classList.toggle("nav-open", open);
       toggle.setAttribute("aria-expanded", open ? "true" : "false");
-    });
-    nav.addEventListener("click", function (e) { if (e.target.closest("a")) nav.classList.remove("open"); });
+      toggle.innerHTML = open ? closeIcon : menuIcon;
+    }
+    toggle.addEventListener("click", function () { setNav(!nav.classList.contains("open")); });
+    nav.addEventListener("click", function (e) { if (e.target.closest("a")) setNav(false); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && nav.classList.contains("open")) setNav(false); });
+  }
+
+  // messages slide away after a while
+  document.querySelectorAll(".toast").forEach(function (t) {
+    setTimeout(function () { t.classList.add("is-gone"); setTimeout(function () { t.remove(); }, 450); }, 7000);
+  });
+
+  // numbers count up when they come into view
+  var counters = document.querySelectorAll("[data-count]");
+  function countUp(el) {
+    var end = parseInt(el.getAttribute("data-count"), 10) || 0, start = performance.now(), dur = 1200;
+    (function step(now) {
+      var k = Math.min(1, (now - start) / dur);
+      el.textContent = Math.round(end * (1 - Math.pow(1 - k, 3)));
+      if (k < 1) requestAnimationFrame(step);
+    })(start);
+  }
+  if ("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    var co = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) { countUp(en.target); co.unobserve(en.target); } });
+    }, { threshold: .6 });
+    counters.forEach(function (el) { co.observe(el); });
   }
 
   // reveal on scroll

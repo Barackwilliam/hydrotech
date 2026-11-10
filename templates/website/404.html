@@ -1,12 +1,16 @@
 {% extends "website/base.html" %}
 {% block title %}404 — {{ company.name }}{% endblock %}
 {% block content %}
+<section class="page-head">
+  <div class="container center">
+    <p class="big404">404</p>
+    <h1>{{ t.not_found_title }}</h1>
+    <p style="margin-inline:auto">{{ t.not_found_text }}</p>
+  </div>
+</section>
 <section class="section">
   <div class="container center">
-    <h1 class="big404">404</h1>
-    <h2>{{ t.not_found_title }}</h2>
-    <p class="muted">{{ t.not_found_text }}</p>
-    <p><a class="btn btn--accent" href="{% url 'home' %}">{{ t.back_home }}</a></p>
+    <a class="btn btn--accent btn--lg" href="{% url 'home' %}">{{ t.back_home }}</a>
   </div>
 </section>
 {% endblock %}

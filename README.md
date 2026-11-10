@@ -42,13 +42,17 @@ Bila `DATABASE_URL` inatumia SQLite; bila funguo za Supabase picha zinakaa kweny
 
 Funguo hizi ziwe kwenye environment ya host tu. Usiziweke kwenye git.
 
-## Deploy (mfano Render)
-- Build command: `./build.sh`
-- Start command: `gunicorn config.wsgi:application`
-- Weka environment variables zote za `env.example`.
-- Admin wa kwanza: Render ya bure haina Shell, kwa hiyo kwenye kompyuta yako weka `DATABASE_URL` ya Supabase
-  kwenye `.env` kisha endesha `python manage.py createsuperuser`. Database ni ile ile, kwa hiyo akaunti
-  itafanya kazi kwenye Render pia.
+## Deploy kwenye Render
+Repo ina `render.yaml`, kwa hiyo Render inasoma mipangilio yenyewe:
+
+1. Render → **New → Blueprint** → chagua repo `hydrotech`.
+2. Jaza thamani zinazoulizwa: `ADMIN_URL`, `DATABASE_URL`, `SUPABASE_PROJECT_REF`, `SUPABASE_S3_REGION`,
+   `SUPABASE_S3_ACCESS_KEY_ID`, `SUPABASE_S3_SECRET_ACCESS_KEY`. `DJANGO_SECRET_KEY` inatengenezwa na Render.
+3. **Apply.** Build (`build.sh`) inafanya install, collectstatic, migrate na `seed_site`.
+4. Admin wa kwanza: Render ya bure haina Shell. Kwenye kompyuta yako, weka `DATABASE_URL` ya Supabase kwenye
+   `.env` kisha endesha `python manage.py createsuperuser`. Database ni moja, kwa hiyo inafanya kazi Render pia.
+5. Domain yako (ukiwa nayo): Render → Settings → Custom Domains, kisha ongeza `ALLOWED_HOSTS=domain.co.tz,www.domain.co.tz`
+   na `SITE_URL=https://domain.co.tz` kwenye Environment.
 
 ## Picha
 Picha zinazopakiwa kwenye admin hupunguzwa ukubwa zenyewe (upande mrefu ≤ 1600px, JPEG), ili

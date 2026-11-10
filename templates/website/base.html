@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{{ company.name }} — {% tr company "tagline" %}{% endblock %}</title>
   <meta name="description" content="{% block description %}{% tr company "tagline" %}{% endblock %}">
-  <meta name="theme-color" content="#0a2a4a">
+  <meta name="theme-color" content="#04192e">
   <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="{{ company.name }}">
@@ -14,8 +14,8 @@
   {% if company.hero_image %}<meta property="og:image" content="{{ company.hero_image.url }}">{% endif %}
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/hydrotech.css' %}?v=3">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/hydrotech.css' %}?v=4">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -35,16 +35,6 @@
 <body class="{% block body_class %}{% endblock %}">
   <a class="skip" href="#main">Skip</a>
 
-  <div class="topbar">
-    <div class="container topbar__inner">
-      <span>{% icon "pin" 16 %} {% tr company "address" %}</span>
-      <span class="topbar__right">
-        {% if company.phone_1 %}<a href="tel:{{ company.phone_1_tel }}">{% icon "phone" 16 %} {{ company.phone_1 }}</a>{% endif %}
-        {% if company.email %}<a href="mailto:{{ company.email }}" class="hide-sm">{% icon "mail" 16 %} {{ company.email }}</a>{% endif %}
-      </span>
-    </div>
-  </div>
-
   <header class="header" id="top">
     <div class="container header__inner">
       <a class="brand" href="{% url 'home' %}" aria-label="{{ company.name }}">
@@ -61,6 +51,7 @@
         <a href="{% url 'contact' %}" {% if '/wasiliana' in p %}class="active"{% endif %}>{{ t.nav_contact }}</a>
         {% endwith %}
         <a class="lang" href="{% if lang == 'sw' %}{% url 'set_language' 'en' %}{% else %}{% url 'set_language' 'sw' %}{% endif %}?next={{ request.get_full_path|urlencode }}">{% icon "globe" 18 %} {{ t.lang_switch }}</a>
+        {% if company.phone_1 %}<a class="nav__phone" href="tel:{{ company.phone_1_tel }}"><span>{% icon "phone" 16 %}</span>{{ company.phone_1 }}</a>{% endif %}
         <a class="btn btn--accent nav__cta" href="{% url 'contact' %}">{{ t.cta_quote }}</a>
       </nav>
     </div>
@@ -68,14 +59,15 @@
 
   <main id="main">
     {% if messages %}
-    <div class="container">
-      {% for m in messages %}<div class="alert alert--{{ m.tags }}" role="status">{{ m }}</div>{% endfor %}
+    <div class="toasts">
+      {% for m in messages %}<div class="toast toast--{{ m.tags }}" role="status">{% if m.tags == "success" %}{% icon "check" 20 %}{% endif %}<span>{{ m }}</span></div>{% endfor %}
     </div>
     {% endif %}
     {% block content %}{% endblock %}
   </main>
 
   <footer class="footer">
+    <svg class="footer__wave" viewBox="0 0 1440 80" preserveAspectRatio="none" aria-hidden="true"><path d="M0 40c160 30 320 40 480 26s320-50 480-46 320 40 480 40V80H0z" fill="currentColor"/></svg>
     <div class="container footer__grid">
       <div>
         <a class="brand brand--light" href="{% url 'home' %}">
@@ -142,6 +134,6 @@
   </div>
   {% endif %}
 
-  <script src="{% static 'js/hydrotech.js' %}?v=3" defer></script>
+  <script src="{% static 'js/hydrotech.js' %}?v=4" defer></script>
 </body>
 </html>

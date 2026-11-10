@@ -1,0 +1,31 @@
+# Render Blueprint: Render -> New -> Blueprint -> pick this repository.
+# Values marked "sync: false" are asked for once, in Render's form (never commit them here).
+services:
+  - type: web
+    name: milan-hydrotech
+    runtime: python
+    region: frankfurt          # closest Render region to Tanzania; pick the same region for Supabase
+    plan: free                 # "starter" keeps the site awake (free sleeps after 15 min idle)
+    branch: main
+    buildCommand: ./build.sh
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 60
+    healthCheckPath: /robots.txt
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: ADMIN_URL
+        sync: false            # e.g. usimamizi-7k2p/  (the admin will be at /usimamizi-7k2p/)
+      - key: DATABASE_URL
+        sync: false            # Supabase -> Connect -> Session pooler
+      - key: SUPABASE_PROJECT_REF
+        sync: false
+      - key: SUPABASE_BUCKET
+        value: milan-hydrotech
+      - key: SUPABASE_S3_REGION
+        sync: false
+      - key: SUPABASE_S3_ACCESS_KEY_ID
+        sync: false
+      - key: SUPABASE_S3_SECRET_ACCESS_KEY
+        sync: false

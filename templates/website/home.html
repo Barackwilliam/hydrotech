@@ -3,42 +3,73 @@
 {% block body_class %}page-home{% endblock %}
 
 {% block content %}
-<section class="hero" {% if company.hero_image %}style="--hero: url('{{ company.hero_image.url }}')"{% endif %}>
-  <div class="container hero__inner">
-    <p class="kicker">{% icon "drop" 18 %} {{ t.hero_kicker }}</p>
-    <h1>{{ t.hero_title }}</h1>
-    <p class="hero__text">{{ t.hero_text }}</p>
-    <div class="hero__actions">
-      <a class="btn btn--accent btn--lg" href="{% url 'contact' %}">{{ t.cta_quote }} {% icon "arrow" 20 %}</a>
-      {% if company.phone_1 %}<a class="btn btn--ghost btn--lg" href="tel:{{ company.phone_1_tel }}">{% icon "phone" 20 %} {{ company.phone_1 }}</a>{% endif %}
+<section class="hero">
+  <div class="hero__bg" aria-hidden="true"><span class="glow glow--a"></span><span class="glow glow--b"></span><span class="dots"></span></div>
+  <div class="container hero__grid">
+    <div class="hero__copy">
+      <p class="eyebrow eyebrow--light"><span class="pulse"></span>{{ t.hero_kicker }}</p>
+      <h1>{{ t.hero_title_a }} <span class="grad">{{ t.hero_title_b }}</span></h1>
+      <p class="hero__text">{{ t.hero_text }}</p>
+      <div class="hero__actions">
+        <a class="btn btn--accent btn--lg" href="{% url 'contact' %}">{{ t.cta_quote }} {% icon "arrow" 20 %}</a>
+        {% if company.phone_1 %}<a class="btn btn--glass btn--lg" href="tel:{{ company.phone_1_tel }}">{% icon "phone" 20 %} {{ company.phone_1 }}</a>{% endif %}
+      </div>
+      <ul class="trust">
+        {% for item in t.trust %}<li>{% icon "check" 18 %} {{ item }}</li>{% endfor %}
+      </ul>
+    </div>
+
+    <div class="hero__visual" aria-hidden="true">
+      {% if company.hero_image %}
+      <figure class="frame frame--main"><img src="{{ company.hero_image.url }}" alt=""></figure>
+      {% endif %}
+      {% with second=projects.0 %}{% if second %}
+      <figure class="frame frame--small"><img src="{{ second.image.url }}" alt=""></figure>
+      {% endif %}{% endwith %}
+      <div class="float-card float-card--a">
+        <span class="float-card__icon">{% icon "search" 22 %}</span>
+        <span><strong>Hydrogeologist</strong><small>{{ t.badge_survey }}</small></span>
+      </div>
+      <div class="float-card float-card--b">
+        <span class="float-card__icon float-card__icon--accent">{% icon "pin" 22 %}</span>
+        <span><strong>{{ regions|length }} {{ t.stat_regions }}</strong><small>{{ t.badge_regions }}</small></span>
+      </div>
     </div>
   </div>
+  <svg class="wave" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true"><path d="M0 64c120 28 240 42 360 34S600 56 720 46s240-14 360 6 240 46 360 42v32H0z" fill="var(--bg)"/><path class="wave__line" d="M0 64c120 28 240 42 360 34S600 56 720 46s240-14 360 6 240 46 360 42" fill="none"/></svg>
 </section>
 
-<section class="stats">
-  <div class="container stats__grid">
-    <div class="stat"><strong>{{ services|length }}</strong><span>{{ t.stat_services }}</span></div>
-    <div class="stat"><strong>{{ regions|length }}</strong><span>{{ t.stat_regions }}</span></div>
-    {% if team_count %}<div class="stat"><strong>{{ team_count }}</strong><span>{{ t.stat_team }}</span></div>{% endif %}
-    {% if company.founded_year %}<div class="stat"><strong>{{ company.founded_year }}</strong><span>{{ t.stat_founded }}</span></div>{% endif %}
+<section class="stats-wrap">
+  <div class="container">
+    <div class="stats">
+      <div class="stat"><span class="stat__icon">{% icon "drill" 24 %}</span><div><strong data-count="{{ services|length }}">{{ services|length }}</strong><span>{{ t.stat_services }}</span></div></div>
+      <div class="stat"><span class="stat__icon">{% icon "pin" 24 %}</span><div><strong data-count="{{ regions|length }}">{{ regions|length }}</strong><span>{{ t.stat_regions }}</span></div></div>
+      {% if team_count %}<div class="stat"><span class="stat__icon">{% icon "user" 24 %}</span><div><strong data-count="{{ team_count }}">{{ team_count }}</strong><span>{{ t.stat_team }}</span></div></div>{% endif %}
+      {% if company.founded_year %}<div class="stat"><span class="stat__icon">{% icon "drop" 24 %}</span><div><strong>{{ company.founded_year }}</strong><span>{{ t.stat_founded }}</span></div></div>{% endif %}
+    </div>
   </div>
 </section>
 
 <section class="section">
   <div class="container">
-    <header class="section__head">
-      <h2>{{ t.services_title }}</h2>
-      <p>{{ t.services_lead }}</p>
+    <header class="head head--split">
+      <div>
+        <p class="eyebrow">{{ t.eyebrow_services }}</p>
+        <h2>{{ t.services_title }}</h2>
+        <p class="head__lead">{{ t.services_lead }}</p>
+      </div>
+      <a class="btn btn--outline" href="{% url 'services' %}">{{ t.see_all_services }} {% icon "arrow" 18 %}</a>
     </header>
-    <div class="cards">
+    <div class="bento">
       {% for s in services %}
-      <a class="card reveal" href="{{ s.get_absolute_url }}">
-        {% if s.image %}<div class="card__img"><img src="{{ s.image.url }}" alt="{% tr s 'title' %}" loading="lazy"></div>{% else %}<div class="card__img card__img--ph">{% icon s.icon 72 %}</div>{% endif %}
-        <div class="card__body">
-          <span class="card__icon">{% icon s.icon 26 %}</span>
+      <a class="tile reveal{% if forloop.first %} tile--big{% endif %}{% if not s.image %} tile--plain{% endif %}" href="{{ s.get_absolute_url }}">
+        {% if s.image %}<img class="tile__img" src="{{ s.image.url }}" alt="" loading="lazy">{% endif %}
+        <span class="tile__num">{{ forloop.counter|stringformat:"02d" }}</span>
+        <span class="tile__icon">{% icon s.icon 24 %}</span>
+        <div class="tile__body">
           <h3>{% tr s "title" %}</h3>
           <p>{% tr s "summary" %}</p>
-          <span class="link">{{ t.read_more }} {% icon "arrow" 16 %}</span>
+          <span class="tile__more">{{ t.read_more }} {% icon "arrow" 16 %}</span>
         </div>
       </a>
       {% endfor %}
@@ -46,14 +77,20 @@
   </div>
 </section>
 
-<section class="section section--tint">
+<section class="section section--deep">
+  <div class="hero__bg" aria-hidden="true"><span class="glow glow--c"></span><span class="dots"></span></div>
   <div class="container">
-    <header class="section__head">
+    <header class="head head--center">
+      <p class="eyebrow eyebrow--light">{{ t.eyebrow_process }}</p>
       <h2>{{ t.process_title }}</h2>
     </header>
-    <ol class="steps">
+    <ol class="timeline">
       {% for title, text in t.process %}
-      <li class="step reveal"><span class="step__num">{{ forloop.counter }}</span><h3>{{ title }}</h3><p>{{ text }}</p></li>
+      <li class="timeline__item reveal" style="--d: {{ forloop.counter0 }}">
+        <span class="timeline__num">{{ forloop.counter }}</span>
+        <h3>{{ title }}</h3>
+        <p>{{ text }}</p>
+      </li>
       {% endfor %}
     </ol>
   </div>
@@ -62,39 +99,48 @@
 {% if projects %}
 <section class="section">
   <div class="container">
-    <header class="section__head">
-      <h2>{{ t.projects_title }}</h2>
-      <p>{{ t.projects_lead }}</p>
+    <header class="head head--split">
+      <div>
+        <p class="eyebrow">{{ t.eyebrow_projects }}</p>
+        <h2>{{ t.projects_title }}</h2>
+        <p class="head__lead">{{ t.projects_lead }}</p>
+      </div>
+      <a class="btn btn--outline" href="{% url 'projects' %}">{{ t.see_all_projects }} {% icon "arrow" 18 %}</a>
     </header>
-    <div class="gallery">
+    <div class="mosaic">
       {% for p in projects %}
-      <a class="gallery__item reveal" href="{{ p.image.url }}" data-lightbox data-caption="{% tr p 'title' %}{% if p.region %} — {{ p.region }}{% endif %}">
+      <a class="mosaic__item reveal" href="{{ p.image.url }}" data-lightbox data-caption="{% tr p 'title' %}{% if p.region %} — {{ p.region }}{% endif %}">
         <img src="{{ p.image.url }}" alt="{% tr p 'title' %}" loading="lazy">
-        <span class="gallery__cap">{% tr p "title" %}</span>
+        <span class="mosaic__cap">{% if p.service %}<small>{% tr p.service "title" %}</small>{% endif %}{% tr p "title" %}</span>
       </a>
       {% endfor %}
     </div>
-    <p class="center"><a class="btn btn--outline" href="{% url 'projects' %}">{{ t.see_all_projects }} {% icon "arrow" 18 %}</a></p>
   </div>
 </section>
 {% endif %}
 
-<section class="section section--dark">
-  <div class="container split">
+<section class="section section--soft">
+  <div class="container why">
+    <div class="why__visual reveal">
+      {% with pic=projects.2|default:projects.0 %}{% if pic %}<img class="why__img" src="{{ pic.image.url }}" alt="" loading="lazy">{% endif %}{% endwith %}
+      <div class="why__badge">
+        <strong>{{ t.water_is_life }}</strong>
+        <span>{% for r in regions %}{{ r }}{% if not forloop.last %} · {% endif %}{% endfor %}</span>
+      </div>
+    </div>
     <div>
+      <p class="eyebrow">{{ t.eyebrow_why }}</p>
       <h2>{{ t.why_title }}</h2>
-      <ul class="why">
+      <ul class="why__list">
         {% for title, text in t.why %}
-        <li class="reveal"><span class="why__tick">{% icon "check" 20 %}</span><div><h3>{{ title }}</h3><p>{{ text }}</p></div></li>
+        <li class="reveal"><span class="why__icon">{% icon "check" 20 %}</span><div><h3>{{ title }}</h3><p>{{ text }}</p></div></li>
         {% endfor %}
       </ul>
-    </div>
-    <div class="regions reveal">
-      <h3>{{ t.regions_title }}</h3>
-      <ul class="chips">
-        {% for r in regions %}<li>{% icon "pin" 16 %} {{ r }}</li>{% endfor %}
-      </ul>
-      <p class="muted">{{ t.regions_lead }}</p>
+      <div class="regions">
+        <p class="regions__title">{{ t.regions_title }}</p>
+        <ul class="chips">{% for r in regions %}<li>{% icon "pin" 16 %} {{ r }}</li>{% endfor %}</ul>
+        <p class="muted small">{{ t.regions_lead }}</p>
+      </div>
     </div>
   </div>
 </section>

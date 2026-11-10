@@ -21,6 +21,24 @@ def pick(obj, field, lang):
 
 
 UI = {
+    # modern home extras
+    "hero_title_a": ("Maji safi,", "Clean water,"),
+    "hero_title_b": ("karibu na wewe.", "close to you."),
+    "trust": (
+        ["Mtaalamu wa maji ardhini", "Mashine kubwa za kisasa", "Pampu na solar"],
+        ["Our own hydrogeologist", "Heavy modern rigs", "Pumps and solar"],
+    ),
+    "badge_survey": ("Utafiti kabla ya kuchimba", "Survey before drilling"),
+    "badge_regions": ("Mikoa tunayohudumia", "Regions we serve"),
+    "eyebrow_services": ("Tunachofanya", "What we do"),
+    "eyebrow_process": ("Hatua kwa hatua", "Step by step"),
+    "eyebrow_projects": ("Kazi halisi", "Real work"),
+    "eyebrow_why": ("Kwa nini sisi", "Why us"),
+    "eyebrow_team": ("Watu wetu", "Our people"),
+    "eyebrow_contact": ("Tuko tayari", "We are ready"),
+    "call_now": ("Piga sasa", "Call now"),
+    "quick_title": ("Unahitaji maji?", "Need water?"),
+    "quick_text": ("Tupigie au tuandikie WhatsApp. Tunajibu haraka.", "Call or WhatsApp us. We answer quickly."),
     # navigation
     "nav_home": ("Mwanzo", "Home"),
     "nav_about": ("Kuhusu Sisi", "About Us"),

@@ -107,3 +107,19 @@ class SiteTests(TestCase):
         r = self.client.get(reverse("about"))
         self.assertContains(r, 'lang="en"')
         self.assertNotContains(r, 'id="lang-modal"')
+
+
+class EmptySiteTests(TestCase):
+    """A fresh database (no seed_site yet) must still show every page, never a server error."""
+
+    def test_pages_load_without_any_content(self):
+        for name in ["home", "about", "services", "projects", "contact"]:
+            with self.subTest(page=name):
+                self.assertEqual(self.client.get(reverse(name)).status_code, 200)
+
+    def test_home_with_one_project(self):
+        buf = BytesIO()
+        Image.new("RGB", (40, 30), "blue").save(buf, "JPEG")
+        with override_settings(MEDIA_ROOT=MEDIA):
+            Project.objects.create(title_sw="Moja", image=SimpleUploadedFile("moja.jpg", buf.getvalue(), "image/jpeg"))
+            self.assertContains(self.client.get(reverse("home")), "moja")

@@ -29,6 +29,9 @@ def home(request):
     return render(request, "website/home.html", {
         "services": _active_services(),
         "projects": projects,
+        # pictures for the hero and the "why us" block; None while there are no projects yet
+        "hero_second": projects[0] if projects else None,
+        "why_project": projects[2] if len(projects) > 2 else (projects[0] if projects else None),
         "regions": Region.objects.all(),
         "team_count": TeamMember.objects.filter(is_active=True).count(),
     })

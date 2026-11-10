@@ -23,9 +23,9 @@
       {% if company.hero_image %}
       <figure class="frame frame--main"><img src="{{ company.hero_image.url }}" alt=""></figure>
       {% endif %}
-      {% with second=projects.0 %}{% if second %}
-      <figure class="frame frame--small"><img src="{{ second.image.url }}" alt=""></figure>
-      {% endif %}{% endwith %}
+      {% if hero_second %}
+      <figure class="frame frame--small"><img src="{{ hero_second.image.url }}" alt=""></figure>
+      {% endif %}
       <div class="float-card float-card--a">
         <span class="float-card__icon">{% icon "search" 22 %}</span>
         <span><strong>Hydrogeologist</strong><small>{{ t.badge_survey }}</small></span>
@@ -122,7 +122,7 @@
 <section class="section section--soft">
   <div class="container why">
     <div class="why__visual reveal">
-      {% with pic=projects.2|default:projects.0 %}{% if pic %}<img class="why__img" src="{{ pic.image.url }}" alt="" loading="lazy">{% endif %}{% endwith %}
+      {% if why_project %}<img class="why__img" src="{{ why_project.image.url }}" alt="" loading="lazy">{% endif %}
       <div class="why__badge">
         <strong>{{ t.water_is_life }}</strong>
         <span>{% for r in regions %}{{ r }}{% if not forloop.last %} · {% endif %}{% endfor %}</span>

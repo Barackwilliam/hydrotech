@@ -11,7 +11,7 @@ from django.views.decorators.http import require_GET
 
 from . import i18n
 from .forms import InquiryForm
-from .models import CompanyInfo, Project, Region, Service, TeamMember
+from .models import CompanyInfo, Project, Region, Service, TeamMember, Video
 
 log = logging.getLogger(__name__)
 
@@ -22,6 +22,10 @@ def _active_services():
 
 def _active_projects():
     return Project.objects.filter(is_active=True).select_related("service", "region")
+
+
+def _active_videos():
+    return Video.objects.filter(is_active=True).select_related("service")
 
 
 SLIDES_MAX = 5
@@ -51,6 +55,7 @@ def home(request):
         "why_project": projects[2] if len(projects) > 2 else (projects[0] if projects else None),
         "regions": Region.objects.all(),
         "team_count": TeamMember.objects.filter(is_active=True).count(),
+        "videos": list(_active_videos().filter(featured=True)[:7]),
     })
 
 
@@ -83,6 +88,12 @@ def projects(request):
     used = Service.objects.filter(is_active=True, projects__is_active=True).distinct()
     return render(request, "website/projects.html", {
         "projects": items, "filters": used, "slides": _slides([p.image for p in items])})
+
+
+def videos(request):
+    items = list(_active_videos())
+    return render(request, "website/videos.html", {
+        "videos": items, "slides": _slides([v.poster for v in items if v.poster])})
 
 
 def contact(request):

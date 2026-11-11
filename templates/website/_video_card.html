@@ -1,0 +1,19 @@
+{% load site_tags %}
+<button type="button" class="vcard vcard--{{ v.kind }}{% if v.is_vertical %} vcard--tall{% endif %}{% if big %} vcard--big{% endif %}"
+        data-video data-kind="{{ v.kind }}" data-vertical="{{ v.is_vertical|yesno:'1,0' }}"
+        data-src="{% if v.file %}{{ v.file.url }}{% else %}{{ v.embed_url }}{% endif %}"
+        data-link="{{ v.url }}" data-title="{% tr v 'title' %}" data-text="{% tr v 'description' %}"
+        aria-label="{{ t.play }}: {% tr v 'title' %}">
+  <span class="vcard__media">
+    {% if v.thumb %}<img src="{{ v.thumb }}" alt="" loading="lazy">
+    {% elif v.file %}<video src="{{ v.file.url }}#t=0.5" preload="metadata" muted playsinline loop></video>
+    {% else %}<span class="vcard__ph">{% icon v.kind 56 %}</span>{% endif %}
+  </span>
+  <span class="vcard__shade"></span>
+  <span class="vcard__badge">{% icon v.kind 15 %}{% if v.kind == "youtube" %}YouTube{% elif v.kind == "facebook" %}Facebook{% elif v.kind == "instagram" %}Instagram{% else %}Video{% endif %}</span>
+  <span class="vcard__play">{% icon "play" 30 %}</span>
+  <span class="vcard__body">
+    {% if v.service %}<small>{% tr v.service "title" %}</small>{% endif %}
+    <strong>{% tr v "title" %}</strong>
+  </span>
+</button>

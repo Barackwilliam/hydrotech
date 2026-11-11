@@ -199,3 +199,95 @@ class Inquiry(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.phone})"
+
+
+def validate_video_file(f):
+    from django.conf import settings
+    from django.core.exceptions import ValidationError
+
+    ext = f.name.rsplit(".", 1)[-1].lower() if "." in f.name else ""
+    if ext not in ("mp4", "webm", "mov", "m4v"):
+        raise ValidationError("Pakia video ya MP4, WEBM au MOV.")
+    limit = settings.VIDEO_MAX_MB
+    if f.size > limit * 1024 * 1024:
+        raise ValidationError(f"Video ni kubwa mno ({f.size // (1024 * 1024)} MB). Kikomo ni {limit} MB: "
+                              "ipunguze au iweke YouTube na ubandike link yake.")
+
+
+class Video(ShrinkImagesMixin, models.Model):
+    """A video: an uploaded file, or a YouTube / Facebook / Instagram link."""
+    image_fields = ("poster",)
+
+    ORIENTATION = [("auto", "Jitambue (auto)"), ("landscape", "Ya kulala (16:9)"), ("portrait", "Ya kusimama (9:16)")]
+
+    title_sw = models.CharField("jina (SW)", max_length=160)
+    title_en = models.CharField("title (EN)", max_length=160, blank=True)
+    description_sw = models.TextField("maelezo (SW)", blank=True)
+    description_en = models.TextField("description (EN)", blank=True)
+    file = models.FileField(
+        "faili la video", upload_to="videos/", blank=True, validators=[validate_video_file],
+        help_text="Video uliyopakua kwenye simu (MP4). Ukipakia faili, link haihitajiki.")
+    url = models.URLField(
+        "link ya video", max_length=500, blank=True,
+        help_text="YouTube, Facebook au Instagram. Kwa Facebook tumia link kamili ya video "
+                  "(si ya facebook.com/share/...).")
+    poster = models.ImageField(
+        "picha ya mbele", upload_to="videos/posters/", blank=True,
+        help_text="Si lazima. YouTube inaleta picha yenyewe; Facebook na Instagram zinahitaji hii ili kadi ipendeze.")
+    orientation = models.CharField("umbo", max_length=10, choices=ORIENTATION, default="auto")
+    service = models.ForeignKey(Service, null=True, blank=True, on_delete=models.SET_NULL, related_name="videos")
+    featured = models.BooleanField("onyesha ukurasa wa mwanzo", default=True)
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField("ionekane", default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["order", "-created_at"]
+        verbose_name = "Video"
+        verbose_name_plural = "Video"
+
+    def __str__(self):
+        return self.title_sw
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+
+        from . import videos
+
+        if not self.file and not self.url:
+            raise ValidationError("Pakia faili la video au bandika link ya YouTube, Facebook au Instagram.")
+        if self.file and self.url:
+            raise ValidationError("Weka kimoja tu: faili au link.")
+        if self.url:
+            if not videos.platform(self.url):
+                raise ValidationError({"url": "Link hii si ya YouTube, Facebook wala Instagram."})
+            if videos.is_short_share_link(self.url):
+                raise ValidationError({"url": "Link za facebook.com/share/... hazichezi kwenye website. Fungua video "
+                                              "Facebook kwenye kompyuta, bonyeza tarehe ya post, kisha nakili link "
+                                              "kamili (kama facebook.com/<ukurasa>/videos/123...)."})
+            if not videos.embed_url(self.url):
+                raise ValidationError({"url": "Sikuweza kusoma video kwenye link hii. Nakili link ya video yenyewe."})
+
+    @property
+    def kind(self):
+        from . import videos
+        return videos.FILE if self.file else videos.platform(self.url)
+
+    @property
+    def embed_url(self):
+        from . import videos
+        return "" if self.file else videos.embed_url(self.url)
+
+    @property
+    def thumb(self):
+        from . import videos
+        if self.poster:
+            return self.poster.url
+        return "" if self.file else videos.thumbnail_url(self.url)
+
+    @property
+    def is_vertical(self):
+        from . import videos
+        if self.orientation != "auto":
+            return self.orientation == "portrait"
+        return not self.file and videos.is_vertical_link(self.url)

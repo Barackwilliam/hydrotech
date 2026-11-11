@@ -1,0 +1,13 @@
+{% load site_tags %}
+<div class="vplayer" id="vplayer" role="dialog" aria-modal="true" aria-label="Video" hidden>
+  <div class="vplayer__stage">
+    <button class="vplayer__btn vplayer__close" type="button" data-vp="close" aria-label="{{ t.close }}">{% icon "close" 24 %}</button>
+    <button class="vplayer__btn vplayer__prev" type="button" data-vp="prev" aria-label="Previous">{% icon "chev-left" 26 %}</button>
+    <div class="vplayer__frame"></div>
+    <button class="vplayer__btn vplayer__next" type="button" data-vp="next" aria-label="Next">{% icon "chev-right" 26 %}</button>
+    <div class="vplayer__info">
+      <div><strong class="vplayer__title"></strong><p class="vplayer__text"></p></div>
+      <a class="vplayer__link" href="#" target="_blank" rel="noopener" hidden>{{ t.watch_on }} <span></span> {% icon "external" 16 %}</a>
+    </div>
+  </div>
+</div>

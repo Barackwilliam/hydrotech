@@ -119,6 +119,30 @@
 </section>
 {% endif %}
 
+{% if videos %}
+<section class="section section--deep vsection">
+  <div class="hero__bg" aria-hidden="true"><span class="glow glow--a"></span><span class="dots"></span></div>
+  <div class="container">
+    <header class="head head--split">
+      <div>
+        <p class="eyebrow eyebrow--light">{{ t.eyebrow_videos }}</p>
+        <h2>{{ t.videos_title }}</h2>
+        <p class="head__lead head__lead--light">{{ t.videos_lead }}</p>
+      </div>
+      <div class="rail-nav">
+        <button class="rail-btn" type="button" data-rail="-1" aria-label="Previous">{% icon "chev-left" 22 %}</button>
+        <button class="rail-btn" type="button" data-rail="1" aria-label="Next">{% icon "chev-right" 22 %}</button>
+        <a class="btn btn--glass" href="{% url 'videos' %}">{{ t.see_all_videos }} {% icon "arrow" 18 %}</a>
+      </div>
+    </header>
+  </div>
+  <div class="rail" data-rail-track>
+    {% for v in videos %}<div class="rail__item reveal">{% include "website/_video_card.html" %}</div>{% endfor %}
+  </div>
+  {% include "website/_video_player.html" %}
+</section>
+{% endif %}
+
 <section class="section section--soft">
   <div class="container why">
     <div class="why__visual reveal">

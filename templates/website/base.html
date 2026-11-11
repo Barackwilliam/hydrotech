@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/hydrotech.css' %}?v=5">
+  <link rel="stylesheet" href="{% static 'css/hydrotech.css' %}?v=6">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -48,6 +48,7 @@
         <a href="{% url 'about' %}" {% if '/kuhusu' in p %}class="active"{% endif %}>{{ t.nav_about }}</a>
         <a href="{% url 'services' %}" {% if '/huduma' in p %}class="active"{% endif %}>{{ t.nav_services }}</a>
         <a href="{% url 'projects' %}" {% if '/miradi' in p %}class="active"{% endif %}>{{ t.nav_projects }}</a>
+        <a href="{% url 'videos' %}" {% if '/video' in p %}class="active"{% endif %}>{{ t.nav_videos }}</a>
         <a href="{% url 'contact' %}" {% if '/wasiliana' in p %}class="active"{% endif %}>{{ t.nav_contact }}</a>
         {% endwith %}
         <a class="lang" href="{% if lang == 'sw' %}{% url 'set_language' 'en' %}{% else %}{% url 'set_language' 'sw' %}{% endif %}?next={{ request.get_full_path|urlencode }}">{% icon "globe" 18 %} {{ t.lang_switch }}</a>
@@ -91,6 +92,7 @@
         <ul class="footer__links">
           <li><a href="{% url 'about' %}">{{ t.nav_about }}</a></li>
           <li><a href="{% url 'projects' %}">{{ t.nav_projects }}</a></li>
+          <li><a href="{% url 'videos' %}">{{ t.nav_videos }}</a></li>
           <li><a href="{% url 'contact' %}">{{ t.nav_contact }}</a></li>
         </ul>
       </div>
@@ -134,6 +136,6 @@
   </div>
   {% endif %}
 
-  <script src="{% static 'js/hydrotech.js' %}?v=5" defer></script>
+  <script src="{% static 'js/hydrotech.js' %}?v=6" defer></script>
 </body>
 </html>

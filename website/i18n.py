@@ -21,6 +21,18 @@ def pick(obj, field, lang):
 
 
 UI = {
+    # videos
+    "videos_title": ("Tazama Tukifanya Kazi", "Watch Us at Work"),
+    "videos_lead": (
+        "Video za mashine zetu zikichimba, maji yakitoka, na miradi ikikamilika.",
+        "Videos of our rigs drilling, water flowing and projects being finished.",
+    ),
+    "eyebrow_videos": ("Video", "Videos"),
+    "see_all_videos": ("Ona video zote", "See all videos"),
+    "play": ("Cheza video", "Play video"),
+    "no_videos": ("Video zitawekwa hivi karibuni.", "Videos are coming soon."),
+    "watch_on": ("Tazama kwenye", "Watch on"),
+    "close": ("Funga", "Close"),
     # modern home extras
     "hero_title_a": ("Maji safi,", "Clean water,"),
     "hero_title_b": ("karibu na wewe.", "close to you."),
@@ -45,6 +57,7 @@ UI = {
     "nav_services": ("Huduma", "Services"),
     "nav_projects": ("Miradi", "Projects"),
     "nav_contact": ("Wasiliana Nasi", "Contact Us"),
+    "nav_videos": ("Video", "Videos"),
     "lang_switch": ("English", "Kiswahili"),
     "menu": ("Menyu", "Menu"),
     # buttons

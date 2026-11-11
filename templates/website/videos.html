@@ -1,0 +1,33 @@
+{% extends "website/base.html" %}
+{% load site_tags %}
+{% block title %}{{ t.videos_title }} — {{ company.name }}{% endblock %}
+{% block description %}{{ t.videos_lead }}{% endblock %}
+
+{% block content %}
+<section class="page-head{% if slides %} page-head--slides{% endif %}">
+  {% include "website/_slides.html" %}
+  <div class="container">
+    <p class="eyebrow eyebrow--light">{{ t.eyebrow_videos }}</p>
+    <h1>{{ t.videos_title }}</h1>
+    <p>{{ t.videos_lead }}</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    {% if videos %}
+    <div class="vwall">
+      {% for v in videos %}<div class="vwall__item reveal">{% include "website/_video_card.html" %}</div>{% endfor %}
+    </div>
+    {% else %}
+    <div class="empty">
+      <span class="empty__icon">{% icon "file" 40 %}</span>
+      <p>{{ t.no_videos }}</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% if videos %}{% include "website/_video_player.html" %}{% endif %}
+{% include "website/_cta.html" %}
+{% endblock %}

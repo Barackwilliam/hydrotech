@@ -109,6 +109,16 @@ class SiteTests(TestCase):
         self.assertNotContains(r, 'id="lang-modal"')
 
 
+    def test_page_heads_have_sliding_pictures(self):
+        for name in ["about", "services", "projects", "contact"]:
+            with self.subTest(page=name):
+                r = self.client.get(reverse(name))
+                self.assertContains(r, 'class="slides"')
+                self.assertGreater(len(r.context["slides"]), 1)
+        r = self.client.get(reverse("service_detail", args=["pump-test"]))
+        self.assertIn("pump-test", r.context["slides"][0])
+
+
 class EmptySiteTests(TestCase):
     """A fresh database (no seed_site yet) must still show every page, never a server error."""
 

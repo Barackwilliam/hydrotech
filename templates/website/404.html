@@ -1,7 +1,8 @@
 {% extends "website/base.html" %}
 {% block title %}404 — {{ company.name }}{% endblock %}
 {% block content %}
-<section class="page-head">
+<section class="page-head{% if slides %} page-head--slides{% endif %}">
+  {% include "website/_slides.html" %}
   <div class="container center">
     <p class="big404">404</p>
     <h1>{{ t.not_found_title }}</h1>

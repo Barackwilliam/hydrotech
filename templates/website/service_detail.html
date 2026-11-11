@@ -5,7 +5,8 @@
 {% block og_title %}{% tr service "title" %} — {{ company.name }}{% endblock %}
 
 {% block content %}
-<section class="page-head" {% if service.image %}style="--hero: url('{{ service.image.url }}')"{% endif %}>
+<section class="page-head{% if slides %} page-head--slides{% endif %}">
+  {% include "website/_slides.html" %}
   <div class="container">
     <p class="crumbs"><a href="{% url 'services' %}">{{ t.nav_services }}</a> /</p>
     <h1>{% tr service "title" %}</h1>

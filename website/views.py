@@ -11,7 +11,7 @@ from django.views.decorators.http import require_GET
 
 from . import i18n
 from .forms import InquiryForm
-from .models import Project, Region, Service, TeamMember
+from .models import CompanyInfo, Project, Region, Service, TeamMember
 
 log = logging.getLogger(__name__)
 
@@ -22,6 +22,23 @@ def _active_services():
 
 def _active_projects():
     return Project.objects.filter(is_active=True).select_related("service", "region")
+
+
+SLIDES_MAX = 5
+
+
+def _slides(*image_lists):
+    """Picture links for the sliding background of a page head: the given pictures first, then the
+    hero picture and project photos, without repeats."""
+    urls = []
+    company = CompanyInfo.load()
+    defaults = [company.hero_image] + [p.image for p in _active_projects()[:SLIDES_MAX]]
+    for image in [img for images in image_lists for img in images] + defaults:
+        if image and image.url not in urls:
+            urls.append(image.url)
+        if len(urls) == SLIDES_MAX:
+            break
+    return urls
 
 
 def home(request):
@@ -41,11 +58,14 @@ def about(request):
     return render(request, "website/about.html", {
         "team": TeamMember.objects.filter(is_active=True),
         "regions": Region.objects.all(),
+        "slides": _slides([CompanyInfo.load().about_image]),
     })
 
 
 def services(request):
-    return render(request, "website/services.html", {"services": _active_services()})
+    items = _active_services()
+    return render(request, "website/services.html", {
+        "services": items, "slides": _slides([s.image for s in items])})
 
 
 def service_detail(request, slug):
@@ -54,13 +74,15 @@ def service_detail(request, slug):
         "service": service,
         "projects": _active_projects().filter(service=service)[:6],
         "others": _active_services().exclude(pk=service.pk),
+        "slides": _slides([service.image], [p.image for p in _active_projects().filter(service=service)]),
     })
 
 
 def projects(request):
     items = _active_projects()
     used = Service.objects.filter(is_active=True, projects__is_active=True).distinct()
-    return render(request, "website/projects.html", {"projects": items, "filters": used})
+    return render(request, "website/projects.html", {
+        "projects": items, "filters": used, "slides": _slides([p.image for p in items])})
 
 
 def contact(request):
@@ -78,7 +100,8 @@ def contact(request):
             messages.success(request, t["form_sent"])
             return redirect(reverse("contact") + "#fomu")
         messages.error(request, t["form_error"])
-    return render(request, "website/contact.html", {"form": form, "regions": Region.objects.all()})
+    return render(request, "website/contact.html", {
+        "form": form, "regions": Region.objects.all(), "slides": _slides()})
 
 
 def _notify_office(inquiry):
@@ -112,4 +135,4 @@ def robots_txt(request):
 
 
 def page_not_found(request, exception):
-    return render(request, "website/404.html", status=404)
+    return render(request, "website/404.html", {"slides": _slides()}, status=404)

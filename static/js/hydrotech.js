@@ -27,6 +27,20 @@
     document.addEventListener("keydown", function (e) { if (e.key === "Escape" && nav.classList.contains("open")) setNav(false); });
   }
 
+  // page head pictures: cross-fade to the next one every few seconds
+  if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    document.querySelectorAll(".slides").forEach(function (box) {
+      var slides = box.querySelectorAll(".slide"), dots = box.querySelectorAll(".slides__dots span"), i = 0;
+      if (slides.length < 2) return;
+      setInterval(function () {
+        if (document.hidden) return;
+        slides[i].classList.remove("is-active"); if (dots[i]) dots[i].classList.remove("is-active");
+        i = (i + 1) % slides.length;
+        slides[i].classList.add("is-active"); if (dots[i]) dots[i].classList.add("is-active");
+      }, 5500);
+    });
+  }
+
   // messages slide away after a while
   document.querySelectorAll(".toast").forEach(function (t) {
     setTimeout(function () { t.classList.add("is-gone"); setTimeout(function () { t.remove(); }, 450); }, 7000);

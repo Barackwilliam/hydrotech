@@ -226,6 +226,29 @@ p { margin: 0 0 1em; }
 .crumbs { margin-bottom: 12px !important; font-size: .9rem !important; font-weight: 600; }
 .crumbs a { color: var(--accent-2); }
 
+/* sliding background pictures in page heads */
+.page-head--slides { padding-top: calc(var(--header-h) + 96px); padding-bottom: 150px; background: var(--deep); }
+.page-head--slides::before { z-index: 1; opacity: .5; }
+.page-head--slides .container { z-index: 2; }
+.page-head--slides::after { z-index: 3; }
+.slides { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+.slide { position: absolute; inset: -3%; background-size: cover; background-position: center; opacity: 0; transform: scale(1.05); transition: opacity 1.6s ease; will-change: opacity, transform; }
+.slide.is-active { opacity: 1; animation: kenburns 9s ease-out forwards; }
+.slide:nth-child(even).is-active { animation-name: kenburns-b; }
+@keyframes kenburns { from { transform: scale(1.05) translate(0, 0); } to { transform: scale(1.18) translate(-2%, -1.5%); } }
+@keyframes kenburns-b { from { transform: scale(1.18) translate(2%, 1%); } to { transform: scale(1.05) translate(0, 0); } }
+.slides::after { content: ""; position: absolute; inset: 0; background:
+  linear-gradient(180deg, rgba(4,25,46,.7) 0%, rgba(4,25,46,0) 30%),
+  linear-gradient(100deg, rgba(4,25,46,.94) 10%, rgba(4,25,46,.7) 50%, rgba(11,79,134,.35) 100%); }
+.slides__dots { position: absolute; z-index: 2; right: max(16px, calc((100% - 1200px) / 2)); bottom: 96px; display: flex; gap: 8px; }
+.slides__dots span { width: 22px; height: 4px; border-radius: 4px; background: rgba(255,255,255,.3); transition: width .4s, background .4s; }
+.slides__dots span.is-active { width: 40px; background: var(--grad-accent); }
+.page-head--slides h1 { text-shadow: 0 4px 30px rgba(0,0,0,.35); }
+@media (max-width: 600px) {
+  .page-head--slides { padding-top: calc(var(--header-h) + 70px); padding-bottom: 130px; }
+  .slides__dots { bottom: 78px; left: 16px; right: auto; }
+}
+
 /* ---------- services list ---------- */
 .service-list { display: grid; gap: 26px; }
 .service-row { display: grid; grid-template-columns: 380px 1fr; background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; transition: transform .3s, box-shadow .3s; }

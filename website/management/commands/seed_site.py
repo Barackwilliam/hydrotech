@@ -72,11 +72,11 @@ SERVICES = [
         "summary_en": "We drill deep water boreholes with heavy modern rigs for homes, farms, schools, institutions and communities.",
         "body_sw": "Kisima kizuri ni zaidi ya shimo refu. Tunachimba kwa mashine kubwa zinazoweza kupenya hata miamba migumu, kisha tunajenga kisima kwa casing na screen bora ili maji yabaki safi na kisima kidumu miaka mingi.\nKina cha kisima huamuliwa na utafiti wa maji ardhini uliofanyika kabla, na hali halisi tunayoikuta wakati wa kuchimba.",
         "body_en": "A good borehole is more than a deep hole. We drill with heavy rigs that cut through even hard rock, then build the borehole with quality casing and screens so the water stays clean and the borehole lasts for years.\nThe depth is set by the groundwater survey done beforehand and by what we find while drilling.",
-        "steps_sw": "Utafiti wa maji ardhini na kuchagua sehemu ya kuchimba\nKuchimba kwa rig hadi kufikia tabaka la maji\nKuweka casing, screen na gravel pack\nKusafisha kisima (development / flushing)\nKupima wingi wa maji (pump test)\nKukabidhi kisima pamoja na ripoti",
-        "steps_en": "Groundwater survey and choosing the drilling point\nRig drilling down to the water-bearing layer\nInstalling casing, screens and gravel pack\nCleaning the borehole (development / flushing)\nYield test (pump test)\nHandover with a report",
+        "steps_sw": "Utafiti wa maji ardhini na kuchagua sehemu ya kuchimba\nKuchimba kwa rig hadi kufikia tabaka la maji\nKuweka casing, screen na gravel pack\nKusafisha kisima (development / flushing)\nKukabidhi kisima pamoja na ripoti\nPump Test: Kupima Wingi wa Maji",
+        "steps_en": "Groundwater survey and choosing the drilling point\nRig drilling down to the water-bearing layer\nInstalling casing, screens and gravel pack\nCleaning the borehole (development / flushing)\nHandover with a report\nPump Test: measuring the water yield",
     },
     {
-        "slug": "utafiti-wa-maji-ardhini", "icon": "search", "image": "",
+        "slug": "utafiti-wa-maji-ardhini", "icon": "search", "image": "utafiti-wa-maji-dodoma.jpg",
         "title_sw": "Utafiti wa Maji Ardhini", "title_en": "Groundwater Survey",
         "summary_sw": "Mtaalamu wetu wa jiolojia ya maji anachunguza eneo lako na kuonyesha sehemu bora na kina kinachotarajiwa.",
         "summary_en": "Our hydrogeologist studies your site and shows the best drilling point and the expected depth.",
@@ -172,6 +172,18 @@ PROJECTS = [
     ("mnara-wa-tenki-nyumbani.jpg", "Mnara wa matenki ya maji nyumbani", "Water tank tower at a home", "tenki-za-maji", False),
     ("mabomba-ya-casing.jpg", "Mabomba ya casing tayari kwa kisima", "Casing pipes ready for a borehole", "uchimbaji-visima", False),
     ("eneo-la-kazi-shambani.jpg", "Eneo la kazi la uchimbaji", "On a drilling site", "uchimbaji-visima", False),
+    ("utafiti-wa-maji-dodoma.jpg", "Utafiti wa maji ardhini, Dodoma", "Groundwater survey in Dodoma", "utafiti-wa-maji-ardhini", True),
+    ("rig-ya-kuchimba-prd.jpg", "Rig ya kuchimba visima virefu", "Rig for deep boreholes", "uchimbaji-visima", False),
+    ("rig-ya-kuchimba-kgr.jpg", "Rig ya kuchimba visima kwenye lori", "Truck-mounted drilling rig", "uchimbaji-visima", False),
+    ("rig-ndogo-ya-kuchimba.jpg", "Rig ya kuchimba visima ya ukubwa wa kati", "Mid-size drilling rig", "uchimbaji-visima", False),
+    ("kifaa-cha-utafiti-wa-maji.jpg", "Kifaa cha kisasa cha utafiti wa maji ardhini", "Modern groundwater survey equipment", "utafiti-wa-maji-ardhini", False),
+    ("utafiti-wa-kina-kirefu.jpg", "Utafiti wa maji hadi kina kirefu", "Surveying water at great depth", "utafiti-wa-maji-ardhini", False),
+    ("kifaa-cha-kutambua-maji.jpg", "Kifaa cha kutambua vyanzo vya maji", "Water source detector", "utafiti-wa-maji-ardhini", False),
+    ("pampu-ya-mkono-kazi-za-awali.jpg", "Pampu ya mkono kisimani: kazi zetu za awali", "Hand pump on a borehole: our earlier work", "ufungaji-wa-pump", False),
+    ("pampu-ya-mkono.jpg", "Pampu ya mkono tunayofunga visimani", "Hand pump we install on boreholes", "ufungaji-wa-pump", False),
+    ("minara-ya-matenki-mifano.jpg", "Mifano ya minara ya matenki tunayojenga", "Tank tower designs we build", "tenki-za-maji", False),
+    ("mapipa-ya-maji-ya-mvua.jpg", "Kuhifadhi maji ya mvua kwenye mapipa", "Storing rain water in barrels", "tenki-za-maji", False),
+    ("maji-ni-uhai.jpg", "Maji ni uhai: maji safi na salama", "Water is life: clean, safe water", "ubora-wa-maji", False),
 ]
 
 

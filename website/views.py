@@ -81,6 +81,9 @@ def service_detail(request, slug):
         "projects": _active_projects().filter(service=service)[:6],
         "others": _active_services().exclude(pk=service.pk),
         "slides": _slides([service.image], [p.image for p in _active_projects().filter(service=service)]),
+        # drilling ends with the pump test: show it as the final step
+        "final_step": Service.objects.filter(slug="pump-test", is_active=True).first()
+        if service.slug == "uchimbaji-visima" else None,
     })
 
 

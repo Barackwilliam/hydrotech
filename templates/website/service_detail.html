@@ -25,6 +25,17 @@
         {% for line in steps %}<li>{{ line }}</li>{% endfor %}
       </ol>
       {% endif %}
+      {% if final_step %}
+      <a class="final-step" href="{{ final_step.get_absolute_url }}">
+        {% if final_step.image %}<img src="{{ final_step.image.url }}" alt="" loading="lazy">{% endif %}
+        <span class="final-step__body">
+          <small>{{ t.final_step }}</small>
+          <strong>{% icon final_step.icon 22 %} {% tr final_step "title" %}</strong>
+          <span>{% tr final_step "summary" %}</span>
+          <span class="link">{{ t.read_more }} {% icon "arrow" 16 %}</span>
+        </span>
+      </a>
+      {% endif %}
       <p><a class="btn btn--accent" href="{% url 'contact' %}?service={{ service.slug }}">{{ t.cta_quote }} {% icon "arrow" 18 %}</a></p>
     </div>
     <aside class="side">

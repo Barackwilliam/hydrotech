@@ -41,7 +41,7 @@ class SiteTests(TestCase):
         before = (Service.objects.count(), Project.objects.count())
         call_command("seed_site", stdout=StringIO())
         self.assertEqual(before, (Service.objects.count(), Project.objects.count()))
-        self.assertEqual(before, (9, 13))
+        self.assertEqual(before, (9, 25))
 
     def test_language_switch(self):
         r = self.client.get(reverse("set_language", args=["en"]) + "?next=/huduma/")
@@ -429,3 +429,35 @@ class FreshNameTests(TestCase):
             p.refresh_from_db()
             self.assertNotIn(p.image.name, seen)
             seen.add(p.image.name)
+
+
+class ClientRequestTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        with override_settings(MEDIA_ROOT=MEDIA):
+            call_command("seed_site", stdout=StringIO())
+
+    def test_drilling_steps_end_with_pump_test_and_link_to_it(self):
+        r = self.client.get(reverse("service_detail", args=["uchimbaji-visima"]))
+        steps = r.context["service"].steps_sw.splitlines()
+        self.assertEqual(steps[-1], "Pump Test: Kupima Wingi wa Maji")
+        self.assertContains(r, 'class="final-step" href="/huduma/pump-test/"')
+        self.assertNotContains(self.client.get(reverse("service_detail", args=["umwagiliaji"])), 'class="final-step"')
+
+    def test_migration_updates_original_steps_only(self):
+        import importlib
+        from django.apps import apps as django_apps
+        mig = importlib.import_module("website.migrations.0006_drilling_ends_with_pump_test")
+        Service.objects.filter(slug="uchimbaji-visima").update(steps_sw=mig.OLD["steps_sw"], steps_en="Our own steps")
+        mig.forwards(django_apps, None)
+        s = Service.objects.get(slug="uchimbaji-visima")
+        self.assertEqual(s.steps_sw, mig.NEW["steps_sw"])
+        self.assertEqual(s.steps_en, "Our own steps")
+
+    def test_all_client_pictures_in_projects_and_survey_has_its_picture(self):
+        r = self.client.get(reverse("projects"))
+        self.assertEqual(len(r.context["projects"]), 25)
+        for title in ["Utafiti wa maji ardhini, Dodoma", "Rig ya kuchimba visima virefu", "Maji ni uhai: maji safi na salama"]:
+            self.assertContains(r, title)
+        self.assertTrue(Service.objects.get(slug="utafiti-wa-maji-ardhini").image)
+        self.assertEqual(Project.objects.filter(service__slug="uchimbaji-visima").count(), 10)

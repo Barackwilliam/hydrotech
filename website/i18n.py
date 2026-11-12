@@ -137,6 +137,7 @@ UI = {
     "service_steps": ("Hatua za kazi", "How it is done"),
     "service_projects": ("Kazi za huduma hii", "Work in this service"),
     "other_services": ("Huduma nyingine", "Other services"),
+    "final_step": ("Hatua ya mwisho", "Final step"),
     # projects
     "filter_all": ("Zote", "All"),
     "no_projects": ("Picha za miradi zitawekwa hivi karibuni.", "Project photos are coming soon."),

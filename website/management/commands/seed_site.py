@@ -169,6 +169,9 @@ PROJECTS = [
     ("submersible-pump.jpg", "Submersible pump tayari kufungwa", "Submersible pump ready for installation", "ufungaji-wa-pump", False),
     ("rig-ya-kuchimba.jpg", "Mashine ya kuchimba visima ikiwa eneo la kazi", "Drilling rig on site", "uchimbaji-visima", False),
     ("compressor-na-rig.jpg", "Compressor ya mashine ya kuchimba", "Drilling rig compressor", "uchimbaji-visima", False),
+    ("mnara-wa-tenki-nyumbani.jpg", "Mnara wa matenki ya maji nyumbani", "Water tank tower at a home", "tenki-za-maji", False),
+    ("mabomba-ya-casing.jpg", "Mabomba ya casing tayari kwa kisima", "Casing pipes ready for a borehole", "uchimbaji-visima", False),
+    ("eneo-la-kazi-shambani.jpg", "Eneo la kazi la uchimbaji", "On a drilling site", "uchimbaji-visima", False),
 ]
 
 

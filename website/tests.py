@@ -41,7 +41,7 @@ class SiteTests(TestCase):
         before = (Service.objects.count(), Project.objects.count())
         call_command("seed_site", stdout=StringIO())
         self.assertEqual(before, (Service.objects.count(), Project.objects.count()))
-        self.assertEqual(before, (9, 10))
+        self.assertEqual(before, (9, 13))
 
     def test_language_switch(self):
         r = self.client.get(reverse("set_language", args=["en"]) + "?next=/huduma/")

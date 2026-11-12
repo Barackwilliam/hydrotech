@@ -25,7 +25,8 @@ def _active_projects():
 
 
 def _active_videos():
-    return Video.objects.filter(is_active=True).select_related("service")
+    # an uploaded video shows only once it carries the watermark
+    return Video.objects.filter(is_active=True).exclude(wm_status__in=["pending", "failed"]).select_related("service")
 
 
 SLIDES_MAX = 5

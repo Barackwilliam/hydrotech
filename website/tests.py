@@ -1,6 +1,7 @@
 import shutil
 import tempfile
 from io import BytesIO, StringIO
+from pathlib import Path
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
@@ -194,10 +195,89 @@ class VideoTests(TestCase):
                 self.assertContains(r, 'id="vplayer"')
                 self.assertContains(r, "vcard--tall")
 
-    def test_uploaded_video_plays_from_storage(self):
+    def test_uploaded_video_shows_only_with_its_watermark(self):
         from .models import Video
-        with override_settings(MEDIA_ROOT=MEDIA):
-            Video.objects.create(title_sw="Faili", file=SimpleUploadedFile("kisima.mp4", b"0000", "video/mp4"))
+        with override_settings(MEDIA_ROOT=MEDIA, VIDEO_WATERMARK_SYNC=True):
+            with self.captureOnCommitCallbacks(execute=True):
+                v = Video.objects.create(title_sw="Kisima Mafinga", file=SimpleUploadedFile("kisima.mp4", make_mp4(), "video/mp4"))
+            v.refresh_from_db()
+            self.assertEqual(v.wm_status, "done")
+            self.assertTrue(v.file_original.name.startswith("originals/"))
+            self.assertTrue(v.file.name.startswith("videos/kisima-mafinga"))
             r = self.client.get(reverse("videos"))
             self.assertContains(r, 'data-kind="file"')
-            self.assertContains(r, "/media/videos/kisima")
+            self.assertContains(r, "/media/videos/kisima-mafinga")
+            self.assertNotContains(r, "originals/")
+
+    def test_video_still_being_stamped_is_hidden(self):
+        from .models import Video
+        with override_settings(MEDIA_ROOT=MEDIA):
+            Video.objects.create(title_sw="Bado", file=SimpleUploadedFile("bado.mp4", b"0000", "video/mp4"))
+            self.assertEqual(Video.objects.get().wm_status, "pending")
+            self.assertNotContains(self.client.get(reverse("videos")), "Bado")
+
+
+def make_mp4(seconds=1):
+    import subprocess
+    from . import watermark
+    out = Path(tempfile.mkdtemp()) / "sample.mp4"
+    subprocess.run([watermark.ffmpeg_exe(), "-y", "-loglevel", "error", "-f", "lavfi", "-i",
+                    f"color=c=blue:s=320x240:d={seconds}", "-pix_fmt", "yuv420p", str(out)], check=True)
+    return out.read_bytes()
+
+
+def jpeg(size=(800, 600), colour="blue"):
+    buf = BytesIO()
+    Image.new("RGB", size, colour).save(buf, "JPEG")
+    return buf.getvalue()
+
+
+@override_settings(MEDIA_ROOT=MEDIA)
+class WatermarkTests(TestCase):
+    def setUp(self):
+        from .models import CompanyInfo
+        c = CompanyInfo.load()
+        c.name, c.website_domain, c.phone_1 = "Milan Hydrotech", "milanhydrotech.co.tz", "+255 714 425 262"
+        c.save()
+
+    def test_local_phone(self):
+        from .watermark import local_phone
+        self.assertEqual(local_phone("+255 714 425 262"), "0714 425 262")
+        self.assertEqual(local_phone("0714425262"), "0714 425 262")
+
+    def test_new_picture_gets_badge_and_keeps_original(self):
+        p = Project.objects.create(title_sw="Kisima", image=SimpleUploadedFile("k.jpg", jpeg(), "image/jpeg"))
+        self.assertTrue(p.image_original.name.startswith("originals/"))
+        self.assertTrue(p.wm_sig)
+        with Image.open(p.image.path) as marked, Image.open(p.image_original.path) as plain:
+            self.assertEqual(marked.size, plain.size)
+            top = marked.convert("RGB").getpixel((400, 40))     # badge at the top centre
+            corner = marked.convert("RGB").getpixel((10, 590))  # untouched elsewhere
+            self.assertNotEqual(top, plain.convert("RGB").getpixel((400, 40)))
+            self.assertEqual(corner, plain.convert("RGB").getpixel((10, 590)))
+
+    def test_apply_watermarks_redraws_from_original_when_text_changes(self):
+        from .models import CompanyInfo
+        p = Project.objects.create(title_sw="Kisima", image=SimpleUploadedFile("k.jpg", jpeg(), "image/jpeg"))
+        first, original = p.image.name, p.image_original.name
+        call_command("apply_watermarks", stdout=StringIO())  # nothing changed: nothing redone
+        p.refresh_from_db()
+        self.assertEqual(p.image.name, first)
+        c = CompanyInfo.load(); c.phone_1 = "+255 784 822 566"; c.save()
+        call_command("apply_watermarks", stdout=StringIO())
+        p.refresh_from_db()
+        self.assertNotEqual(p.image.name, first)
+        self.assertEqual(p.image_original.name, original)       # badge drawn on the clean copy
+        self.assertFalse(p.image.storage.exists(first))           # old stamped file removed
+
+    def test_old_pictures_become_their_own_original(self):
+        Project.objects.create(title_sw="Kisima", image=SimpleUploadedFile("k.jpg", jpeg(), "image/jpeg"))
+        Project.objects.update(image_original="", wm_sig="")       # as if uploaded before watermarks
+        call_command("apply_watermarks", stdout=StringIO())
+        p = Project.objects.get()
+        self.assertTrue(p.image_original and p.wm_sig)
+
+    def test_seeded_pictures_carry_the_badge(self):
+        call_command("seed_site", stdout=StringIO())
+        self.assertFalse(Project.objects.filter(wm_sig="").exists())
+        self.assertFalse(Service.objects.exclude(image="").filter(wm_sig="").exists())

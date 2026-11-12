@@ -209,7 +209,8 @@
   function load(i) {
     index = (i + cards.length) % cards.length;
     var c = cards[index], kind = c.getAttribute("data-kind"), src = c.getAttribute("data-src");
-    frame.innerHTML = "";
+    Array.prototype.slice.call(frame.children).forEach(function (el) { if (!el.classList.contains("vplayer__wm")) el.remove(); });
+    player.classList.toggle("vplayer--embed", kind !== "file");
     if (kind === "file") {
       var v = document.createElement("video");
       v.src = src; v.controls = true; v.autoplay = true; v.playsInline = true; v.setAttribute("playsinline", "");
@@ -241,7 +242,10 @@
   function close() {
     player.classList.remove("open");
     document.body.classList.remove("modal-open");
-    setTimeout(function () { player.hidden = true; frame.innerHTML = ""; }, 300);  // stops the sound
+    setTimeout(function () {  // removing the player stops the sound
+      player.hidden = true;
+      Array.prototype.slice.call(frame.children).forEach(function (el) { if (!el.classList.contains("vplayer__wm")) el.remove(); });
+    }, 300);
     if (lastFocus && lastFocus.focus) lastFocus.focus();
   }
 

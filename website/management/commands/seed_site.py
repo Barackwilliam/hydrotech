@@ -8,7 +8,7 @@ Safe to run again: existing rows are updated, pictures are uploaded only where n
 """
 from pathlib import Path
 
-from django.core.files import File
+from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
@@ -45,6 +45,7 @@ COMPANY = {
     "phone_2": "+255 784 822 566",
     "whatsapp": "+255 714 425 262",
     "email": "msgodfrey559@gmail.com",
+    "website_domain": "milanhydrotech.co.tz",
     "po_box": "655, Iringa",
     "address_sw": "Mafinga, Iringa, Tanzania",
     "address_en": "Mafinga, Iringa, Tanzania",
@@ -178,8 +179,8 @@ def attach(obj, field, filename):
     path = IMAGES / filename
     if not path.exists():
         return False
-    with path.open("rb") as fh:
-        getattr(obj, field).save(filename, File(fh), save=False)
+    # handed over unsaved, so the model shrinks it and puts the watermark on it when it is saved
+    setattr(obj, field, ContentFile(path.read_bytes(), name=filename))
     return True
 
 

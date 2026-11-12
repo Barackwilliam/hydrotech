@@ -15,7 +15,7 @@ class CompanyInfoAdmin(admin.ModelAdmin):
     fieldsets = [
         ("Kampuni", {"fields": ["name", "founded_year", "ceo_name", "tagline_sw", "tagline_en"]}),
         ("Kuhusu sisi", {"fields": ["about_sw", "about_en", "about_image"]}),
-        ("Mawasiliano", {"fields": ["phone_1", "phone_2", "whatsapp", "email", "po_box",
+        ("Mawasiliano", {"fields": ["website_domain", "phone_1", "phone_2", "whatsapp", "email", "po_box",
                                     "address_sw", "address_en", "map_query"]}),
         ("Mitandao ya kijamii", {"fields": ["facebook_url", "instagram_url", "tiktok_url"]}),
         ("Ukurasa wa mwanzo", {"fields": ["hero_image"]}),
@@ -99,7 +99,7 @@ class InquiryAdmin(admin.ModelAdmin):
 
 @admin.register(Video)
 class VideoAdmin(admin.ModelAdmin):
-    list_display = ["title_sw", "preview", "source", "featured", "is_active", "order"]
+    list_display = ["title_sw", "preview", "source", "wm_status", "featured", "is_active", "order"]
     list_editable = ["featured", "is_active", "order"]
     list_filter = ["featured", "is_active", "service"]
     search_fields = ["title_sw", "title_en", "url"]

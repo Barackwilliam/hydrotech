@@ -2,10 +2,14 @@
 Content of the site. Text the visitor reads exists in Swahili (_sw) and English (_en); when the English
 is left empty, the Swahili is shown.
 """
+import uuid
+from pathlib import Path
+
+from django.core.files.base import ContentFile
 from django.db import models
 from django.urls import reverse
 
-from .images import shrink
+from .images import shrink, shrunk_bytes
 
 ICONS = [
     ("drill", "Uchimbaji / Drilling"),
@@ -21,18 +25,56 @@ ICONS = [
 ]
 
 
+def _original_name(instance, filename):
+    """Untouched uploads: a random name nobody can guess, since the bucket is public."""
+    ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else "jpg"
+    return f"originals/{uuid.uuid4().hex}.{ext}"
+
+
 class ShrinkImagesMixin:
+    """Shrinks new uploads; those listed in watermark_fields also get the company badge.
+
+    Each watermarked field <name> has a twin <name>_original that keeps the upload without the badge."""
     image_fields = ()
+    watermark_fields = ()
+
+    def _watermark_lines(self):
+        from . import watermark
+        return watermark.texts()
 
     def save(self, *args, **kwargs):
+        from . import watermark
+
+        stamped_any = False
         for name in self.image_fields:
-            shrink(getattr(self, name))
+            field = getattr(self, name)
+            if name in self.watermark_fields and not field:
+                setattr(self, name + "_original", None)
+            if not field or getattr(field, "_committed", True):
+                continue
+            if name not in self.watermark_fields:
+                shrink(field)
+                continue
+            data = shrunk_bytes(field.file)
+            if data is None:
+                continue
+            lines = self._watermark_lines()
+            getattr(self, name + "_original").save("x.jpg", ContentFile(data), save=False)
+            field.save(Path(field.name).stem + ".jpg", ContentFile(watermark.stamp_image(data, lines)), save=False)
+            self.wm_sig = watermark.signature(lines)
+            stamped_any = True
         super().save(*args, **kwargs)
+        return stamped_any
 
 
 class CompanyInfo(ShrinkImagesMixin, models.Model):
     """One row only: the details shown in the header, footer and contact page."""
     image_fields = ("hero_image", "about_image")
+    watermark_fields = ("hero_image", "about_image")
+
+    def _watermark_lines(self):
+        from . import watermark
+        return (self.name or "Milan Hydrotech", (self.website_domain or "").strip(), watermark.local_phone(self.phone_1))
 
     name = models.CharField(max_length=120, default="Milan Hydrotech")
     tagline_sw = models.CharField("kauli mbiu (SW)", max_length=200, blank=True)
@@ -55,6 +97,12 @@ class CompanyInfo(ShrinkImagesMixin, models.Model):
     tiktok_url = models.URLField(blank=True)
     hero_image = models.ImageField(upload_to="site/", blank=True, help_text="Picha kubwa ya ukurasa wa mwanzo")
     about_image = models.ImageField(upload_to="site/", blank=True)
+    hero_image_original = models.ImageField(upload_to=_original_name, blank=True, editable=False)
+    about_image_original = models.ImageField(upload_to=_original_name, blank=True, editable=False)
+    website_domain = models.CharField(
+        "anwani ya website", max_length=120, blank=True,
+        help_text="Mfano: milanhydrotech.co.tz. Inaonekana kwenye watermark ya picha na video.")
+    wm_sig = models.CharField(max_length=32, blank=True, editable=False)
 
     class Meta:
         verbose_name = "Taarifa za kampuni"
@@ -104,6 +152,7 @@ class Region(models.Model):
 
 class Service(ShrinkImagesMixin, models.Model):
     image_fields = ("image",)
+    watermark_fields = ("image",)
 
     slug = models.SlugField(unique=True)
     icon = models.CharField(max_length=20, choices=ICONS, default="drill")
@@ -116,6 +165,8 @@ class Service(ShrinkImagesMixin, models.Model):
     steps_sw = models.TextField("hatua (SW)", blank=True, help_text="Hatua moja kwa kila mstari.")
     steps_en = models.TextField("steps (EN)", blank=True)
     image = models.ImageField(upload_to="services/", blank=True)
+    image_original = models.ImageField(upload_to=_original_name, blank=True, editable=False)
+    wm_sig = models.CharField(max_length=32, blank=True, editable=False)
     order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField("ionekane", default=True)
 
@@ -158,12 +209,15 @@ class TeamMember(ShrinkImagesMixin, models.Model):
 class Project(ShrinkImagesMixin, models.Model):
     """A finished job shown in the gallery."""
     image_fields = ("image",)
+    watermark_fields = ("image",)
 
     title_sw = models.CharField("jina (SW)", max_length=160)
     title_en = models.CharField("title (EN)", max_length=160, blank=True)
     description_sw = models.TextField("maelezo (SW)", blank=True)
     description_en = models.TextField("description (EN)", blank=True)
     image = models.ImageField(upload_to="projects/")
+    image_original = models.ImageField(upload_to=_original_name, blank=True, editable=False)
+    wm_sig = models.CharField(max_length=32, blank=True, editable=False)
     service = models.ForeignKey(Service, null=True, blank=True, on_delete=models.SET_NULL, related_name="projects")
     region = models.ForeignKey(Region, null=True, blank=True, on_delete=models.SET_NULL, related_name="projects")
     place = models.CharField("mahali", max_length=120, blank=True, help_text="Mfano: Shule ya Msingi X, Makambako")
@@ -234,6 +288,10 @@ class Video(ShrinkImagesMixin, models.Model):
     poster = models.ImageField(
         "picha ya mbele", upload_to="videos/posters/", blank=True,
         help_text="Si lazima. YouTube inaleta picha yenyewe; Facebook na Instagram zinahitaji hii ili kadi ipendeze.")
+    file_original = models.FileField(upload_to=_original_name, blank=True, editable=False)
+    WM_STATUS = [("", "—"), ("pending", "Inawekewa watermark…"), ("done", "Tayari"), ("failed", "Imeshindwa")]
+    wm_status = models.CharField("watermark", max_length=10, choices=WM_STATUS, blank=True, editable=False)
+    wm_sig = models.CharField(max_length=32, blank=True, editable=False)
     orientation = models.CharField("umbo", max_length=10, choices=ORIENTATION, default="auto")
     service = models.ForeignKey(Service, null=True, blank=True, on_delete=models.SET_NULL, related_name="videos")
     featured = models.BooleanField("onyesha ukurasa wa mwanzo", default=True)
@@ -254,9 +312,10 @@ class Video(ShrinkImagesMixin, models.Model):
 
         from . import videos
 
-        if not self.file and not self.url:
+        has_file = bool(self.file or self.file_original)
+        if not has_file and not self.url:
             raise ValidationError("Pakia faili la video au bandika link ya YouTube, Facebook au Instagram.")
-        if self.file and self.url:
+        if has_file and self.url:
             raise ValidationError("Weka kimoja tu: faili au link.")
         if self.url:
             if not videos.platform(self.url):
@@ -268,10 +327,24 @@ class Video(ShrinkImagesMixin, models.Model):
             if not videos.embed_url(self.url):
                 raise ValidationError({"url": "Sikuweza kusoma video kwenye link hii. Nakili link ya video yenyewe."})
 
+    def save(self, *args, **kwargs):
+        new_upload = bool(self.file) and not getattr(self.file, "_committed", True)
+        if new_upload:
+            # keep the upload aside; the public file is the copy with the badge, made in the background
+            self.file_original.save(self.file.name, self.file, save=False)
+            self.file = None
+            self.wm_status, self.wm_sig = "pending", ""
+        super().save(*args, **kwargs)
+        if new_upload:
+            from django.db import transaction
+
+            from .video_jobs import start
+            transaction.on_commit(lambda: start(self.pk))
+
     @property
     def kind(self):
         from . import videos
-        return videos.FILE if self.file else videos.platform(self.url)
+        return videos.FILE if (self.file or self.file_original) else videos.platform(self.url)
 
     @property
     def embed_url(self):

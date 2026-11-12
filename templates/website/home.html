@@ -64,10 +64,8 @@
       {% for s in services %}
       <a class="tile reveal{% if forloop.first %} tile--big{% endif %}{% if not s.image %} tile--plain{% endif %}" href="{{ s.get_absolute_url }}">
         {% if s.image %}<img class="tile__img" src="{{ s.image.url }}" alt="" loading="lazy">{% endif %}
-        <span class="tile__num">{{ forloop.counter|stringformat:"02d" }}</span>
-        <span class="tile__icon">{% icon s.icon 24 %}</span>
         <div class="tile__body">
-          <h3>{% tr s "title" %}</h3>
+          <h3><span class="tile__icon">{% icon s.icon 22 %}</span>{% tr s "title" %}</h3>
           <p>{% tr s "summary" %}</p>
           <span class="tile__more">{{ t.read_more }} {% icon "arrow" 16 %}</span>
         </div>

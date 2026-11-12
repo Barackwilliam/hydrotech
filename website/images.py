@@ -9,20 +9,25 @@ MAX_SIDE = 1600
 QUALITY = 82
 
 
-def shrink(field):
-    """Re-encode a newly uploaded image as a JPEG no wider/taller than MAX_SIDE. Leaves saved files alone."""
-    if not field or getattr(field, "_committed", True):
-        return
+def shrunk_bytes(fileobj):
+    """JPEG bytes of the picture, no wider/taller than MAX_SIDE, or None when Pillow cannot read it."""
     try:
-        field.file.seek(0)
-        img = Image.open(field.file)
-        img = ImageOps.exif_transpose(img)  # phone photos store rotation in EXIF
+        fileobj.seek(0)
+        img = ImageOps.exif_transpose(Image.open(fileobj))  # phone photos store rotation in EXIF
     except Exception:
-        return  # not an image Pillow can read; the form validation already handles that
+        return None  # not a picture; the form validation already handles that
     if img.mode not in ("RGB", "L"):
         img = img.convert("RGB")
     img.thumbnail((MAX_SIDE, MAX_SIDE))
     out = BytesIO()
     img.save(out, "JPEG", quality=QUALITY, optimize=True, progressive=True)
-    name = Path(field.name).stem + ".jpg"
-    field.save(name, ContentFile(out.getvalue()), save=False)
+    return out.getvalue()
+
+
+def shrink(field):
+    """Re-encode a newly uploaded image as a JPEG no wider/taller than MAX_SIDE. Leaves saved files alone."""
+    if not field or getattr(field, "_committed", True):
+        return
+    data = shrunk_bytes(field.file)
+    if data is not None:
+        field.save(Path(field.name).stem + ".jpg", ContentFile(data), save=False)

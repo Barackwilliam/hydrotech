@@ -19,10 +19,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps
 log = logging.getLogger(__name__)
 
 ASSETS = Path(__file__).resolve().parent / "watermark_assets"
-VERSION = "1"  # bump when the look of the badge changes, so apply_watermarks redraws everything
-NAVY = (4, 25, 46)
-ORANGE = (255, 181, 71)
-LIGHT = (214, 228, 242)
+VERSION = "2"  # bump when the look of the badge changes, so apply_watermarks redraws everything
 
 
 def local_phone(number):
@@ -62,48 +59,58 @@ def _icon(name, size):
     return _asset(name).resize((max(1, int(size)), max(1, int(size))), Image.LANCZOS)
 
 
+def _spaced_width(font, text, spacing):
+    return sum(font.getlength(ch) for ch in text) + spacing * max(0, len(text) - 1)
+
+
+def _draw_spaced(draw, x, y, text, font, spacing, **style):
+    for ch in text:
+        draw.text((x, y), ch, font=font, anchor="lm", **style)
+        x += font.getlength(ch) + spacing
+    return x
+
+
 def badge_layer(size, lines=None):
-    """A transparent layer the size of the picture with the badge drawn at the top centre."""
+    """A transparent layer the size of the picture with the badge at the top centre: the logo, then the
+    name in big black capitals and the phone and website under it. No panel behind it; a thin white
+    edge round every letter keeps it readable on dark parts of the photo."""
     name, website, phone = lines or texts()
+    name, website = name.upper(), website.upper()
     w, h = size
     layer = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     if min(w, h) < 120:  # thumbnails too small to carry readable text
         return layer
-    line2 = ([("icon", "")] if phone else []) + ([("phone", phone)] if phone else [])
-    if website:
-        line2.append(("site", ("  ·  " if phone else "") + website))
+    line2 = "  •  ".join(t for t in (phone, website) if t)
 
     u = min(w, h) / 100
-    for _ in range(4):  # shrink the badge until it fits across the picture
-        f_name, f_small = _font(800, 4.4 * u), _font(700, 3.3 * u)
-        logo, ph = _icon("logo.png", 9.6 * u), _icon("phone.png", 3 * u)
-        gap, pad = 1.1 * u, 2.2 * u
-        line2_w = sum(ph.width + gap if kind == "icon" else f_small.getlength(t) for kind, t in line2)
-        bw = int(pad * 2 + logo.width + 2 * u + max(f_name.getlength(name), line2_w))
-        if bw <= w * 0.94:
+    for _ in range(4):  # shrink until it fits across the picture
+        f1, f2 = _font(800, 6.2 * u), _font(700, 3.3 * u)
+        sp1, sp2 = .35 * u, .22 * u
+        logo = _icon("logo.png", 13 * u)
+        ph = _icon("phone.png", 3.4 * u) if phone else None
+        gap = 2.4 * u
+        width2 = (ph.width + 1.2 * u if ph else 0) + _spaced_width(f2, line2, sp2)
+        bw = logo.width + gap + max(_spaced_width(f1, name, sp1), width2)
+        if bw <= w * 0.92:
             break
-        u *= w * 0.94 / bw
-    bh = int(logo.height + pad * 1.6)
-    x, y = int((w - bw) / 2), int(3 * min(w, h) / 100)
-    radius = int(bh / 2.6)
-
-    shadow = ImageDraw.Draw(layer)
-    shadow.rounded_rectangle((x, y + u, x + bw, y + bh + u), radius=radius, fill=(0, 0, 0, 90))
-    layer = layer.filter(ImageFilter.GaussianBlur(u * 1.2))
+        u *= w * 0.92 / bw
+    x, y = (w - bw) / 2, 3 * min(w, h) / 100
     d = ImageDraw.Draw(layer)
-    d.rounded_rectangle((x, y, x + bw, y + bh), radius=radius, fill=NAVY + (178,),
-                        outline=(255, 255, 255, 60), width=max(1, int(u * .25)))
-    layer.alpha_composite(logo, (int(x + pad), int(y + (bh - logo.height) / 2)))
-    tx = x + pad + logo.width + 2 * u
-    d.text((tx, y + bh * .30), name, font=f_name, fill=(255, 255, 255, 255), anchor="lm")
-    cx, cy = tx, y + bh * .70
-    for kind, t in line2:
-        if kind == "icon":
-            layer.alpha_composite(ph, (int(cx), int(cy - ph.height / 2)))
-            cx += ph.width + gap
-        else:
-            d.text((cx, cy), t, font=f_small, fill=(ORANGE if kind == "phone" else LIGHT) + (255,), anchor="lm")
-            cx += f_small.getlength(t)
+    edge = dict(stroke_width=max(1, int(.45 * u)), stroke_fill=(255, 255, 255, 235))
+    ink = dict(fill=(10, 10, 10, 255), **edge)
+
+    layer.alpha_composite(logo, (int(x), int(y)))
+    tx = x + logo.width + gap
+    _draw_spaced(d, tx, y + logo.height * .36, name, f1, sp1, **ink)
+    cy = y + logo.height * .78
+    cx = tx
+    if ph:
+        halo = Image.new("RGBA", ph.size, (255, 255, 255, 235))
+        halo.putalpha(ph.split()[3].filter(ImageFilter.MaxFilter(5)))
+        layer.alpha_composite(halo, (int(cx), int(cy - ph.height / 2)))
+        layer.alpha_composite(ph, (int(cx), int(cy - ph.height / 2)))
+        cx += ph.width + 1.2 * u
+    _draw_spaced(d, cx, cy, line2, f2, sp2, **ink)
     return layer
 
 

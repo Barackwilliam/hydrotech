@@ -6,7 +6,7 @@
     <div class="vplayer__frame">
       <div class="vplayer__wm" aria-hidden="true">
         <img src="{% static 'img/logo.svg' %}" alt="">
-        <span><strong>{{ company.name }}</strong><small>{{ wm_phone }}{% if company.website_domain %} <span>· {{ company.website_domain }}</span>{% endif %}</small></span>
+        <span><strong>{{ company.name }}</strong><small>{{ wm_phone }}{% if company.website_domain %} • {{ company.website_domain }}{% endif %}</small></span>
       </div>
     </div>
     <button class="vplayer__btn vplayer__next" type="button" data-vp="next" aria-label="Next">{% icon "chev-right" 26 %}</button>

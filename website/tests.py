@@ -321,3 +321,65 @@ class PumpTestEverywhereTests(TestCase):
         c.refresh_from_db()
         self.assertEqual(c.tagline_sw, mig.NEW["tagline_sw"])
         self.assertEqual(c.tagline_en, "Our own words")
+
+
+
+@override_settings(MEDIA_ROOT=MEDIA)
+class WatermarkEverywhereTests(TestCase):
+    """Every picture the site serves carries the badge: team photos, video posters, YouTube covers too."""
+
+    def test_team_photo_and_video_poster_get_badge(self):
+        from .models import TeamMember, Video
+        m = TeamMember.objects.create(name="Imani", photo=SimpleUploadedFile("i.jpg", jpeg(), "image/jpeg"))
+        v = Video.objects.create(title_sw="FB", url="https://www.facebook.com/milan/videos/1/",
+                                 poster=SimpleUploadedFile("p.jpg", jpeg(), "image/jpeg"))
+        for obj, name in ((m, "photo"), (v, "poster")):
+            with self.subTest(field=name):
+                self.assertTrue(getattr(obj, name + "_original").name.startswith("originals/"))
+                self.assertTrue(obj.wm_sig)
+
+    def test_youtube_cover_is_kept_as_watermarked_poster(self):
+        from unittest import mock
+        from .models import Video
+        with override_settings(FETCH_YOUTUBE_POSTERS=True), \
+                mock.patch("website.videos.download_thumbnail", return_value=jpeg((1280, 720))) as dl:
+            v = Video.objects.create(title_sw="YT", url="https://youtu.be/dQw4w9WgXcQ")
+        dl.assert_called_once()
+        self.assertTrue(v.poster.name.startswith("videos/posters/youtube-dQw4w9WgXcQ"))
+        self.assertTrue(v.poster_original and v.wm_sig)
+        self.assertEqual(v.thumb, v.poster.url)  # the card shows our copy, never YouTube's own picture
+
+    def test_youtube_without_cover_shows_no_outside_picture(self):
+        from .models import Video
+        v = Video.objects.create(title_sw="YT", url="https://youtu.be/dQw4w9WgXcQ")
+        self.assertEqual(v.thumb, "")
+        self.assertNotContains(self.client.get(reverse("videos")), "i.ytimg.com")
+
+    def test_apply_watermarks_catches_everything_left_unstamped(self):
+        from .models import CompanyInfo, TeamMember, Video
+        TeamMember.objects.create(name="Imani", photo=SimpleUploadedFile("i.jpg", jpeg(), "image/jpeg"))
+        Video.objects.create(title_sw="FB", url="https://www.facebook.com/milan/videos/1/",
+                             poster=SimpleUploadedFile("p.jpg", jpeg(), "image/jpeg"))
+        Project.objects.create(title_sw="K", image=SimpleUploadedFile("k.jpg", jpeg(), "image/jpeg"))
+        for model in (TeamMember, Video, Project, CompanyInfo):  # as if saved before the badge existed
+            model.objects.update(wm_sig="")
+        TeamMember.objects.update(photo_original="")
+        call_command("apply_watermarks", stdout=StringIO())
+        for model in (TeamMember, Video, Project):
+            with self.subTest(model=model.__name__):
+                self.assertFalse(model.objects.filter(wm_sig="").exists())
+        self.assertTrue(TeamMember.objects.get().photo_original)
+
+    def test_background_stamping_runs_only_in_the_web_server(self):
+        import sys
+        from unittest import mock
+        from . import apps
+        with mock.patch.object(sys, "argv", ["manage.py", "migrate"]):
+            self.assertFalse(apps._is_web_server())
+        with mock.patch.object(sys, "argv", ["/venv/bin/gunicorn", "config.wsgi"]):
+            self.assertTrue(apps._is_web_server())
+        Project.objects.create(title_sw="K", image=SimpleUploadedFile("k.jpg", jpeg(), "image/jpeg"))
+        Project.objects.update(wm_sig="")
+        with mock.patch("website.apps.close_old_connections", create=True):
+            apps._stamp_missing()
+        self.assertFalse(Project.objects.filter(wm_sig="").exists())

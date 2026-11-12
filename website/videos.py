@@ -83,3 +83,22 @@ def thumbnail_url(url):
         vid = youtube_id(url)
         return f"https://i.ytimg.com/vi/{vid}/hqdefault.jpg" if vid else ""
     return ""
+
+
+def download_thumbnail(url, timeout=6):
+    """The biggest cover picture YouTube has for this video, as bytes; None when it cannot be fetched."""
+    from urllib.request import Request, urlopen
+
+    vid = youtube_id(url)
+    if not vid:
+        return None
+    for size in ("maxresdefault", "sddefault", "hqdefault"):
+        try:
+            req = Request(f"https://i.ytimg.com/vi/{vid}/{size}.jpg", headers={"User-Agent": "Mozilla/5.0"})
+            with urlopen(req, timeout=timeout) as resp:
+                data = resp.read()
+            if len(data) > 2000:  # YouTube answers missing sizes with a tiny grey placeholder
+                return data
+        except Exception:
+            continue
+    return None

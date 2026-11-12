@@ -5,6 +5,7 @@ Every secret comes from the environment (the host's Environment page, or a local
 never committed). See env.example for the full list.
 """
 import os
+import sys
 from pathlib import Path
 
 import dj_database_url
@@ -166,6 +167,10 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 15 * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 
 VIDEO_MAX_MB = int(env("VIDEO_MAX_MB", "50"))
+# Keep YouTube's cover picture as our own (watermarked) poster. Off in tests: no network there.
+FETCH_YOUTUBE_POSTERS = env_bool("FETCH_YOUTUBE_POSTERS", "test" not in sys.argv)
+# Stamp missing watermarks in the background whenever the web server starts.
+WATERMARK_ON_START = env_bool("WATERMARK_ON_START", True)
 
 # Optional: an email to the office for every new request from the contact form.
 EMAIL_BACKEND = env("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")

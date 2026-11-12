@@ -184,13 +184,16 @@ class Service(ShrinkImagesMixin, models.Model):
 
 class TeamMember(ShrinkImagesMixin, models.Model):
     image_fields = ("photo",)
+    watermark_fields = ("photo",)
 
     name = models.CharField(max_length=120)
     role_sw = models.CharField("cheo (SW)", max_length=120, blank=True)
     role_en = models.CharField("role (EN)", max_length=120, blank=True)
     photo = models.ImageField(upload_to="team/", blank=True)
+    photo_original = models.ImageField(upload_to=_original_name, blank=True, editable=False)
     order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField("aonekane", default=True)
+    wm_sig = models.CharField(max_length=32, blank=True, editable=False)
 
     class Meta:
         ordering = ["order", "id"]
@@ -271,6 +274,7 @@ def validate_video_file(f):
 class Video(ShrinkImagesMixin, models.Model):
     """A video: an uploaded file, or a YouTube / Facebook / Instagram link."""
     image_fields = ("poster",)
+    watermark_fields = ("poster",)
 
     ORIENTATION = [("auto", "Jitambue (auto)"), ("landscape", "Ya kulala (16:9)"), ("portrait", "Ya kusimama (9:16)")]
 
@@ -288,10 +292,12 @@ class Video(ShrinkImagesMixin, models.Model):
     poster = models.ImageField(
         "picha ya mbele", upload_to="videos/posters/", blank=True,
         help_text="Si lazima. YouTube inaleta picha yenyewe; Facebook na Instagram zinahitaji hii ili kadi ipendeze.")
+    poster_original = models.ImageField(upload_to=_original_name, blank=True, editable=False)
     file_original = models.FileField(upload_to=_original_name, blank=True, editable=False)
     WM_STATUS = [("", "—"), ("pending", "Inawekewa watermark…"), ("done", "Tayari"), ("failed", "Imeshindwa")]
     wm_status = models.CharField("watermark", max_length=10, choices=WM_STATUS, blank=True, editable=False)
-    wm_sig = models.CharField(max_length=32, blank=True, editable=False)
+    wm_sig = models.CharField(max_length=32, blank=True, editable=False)     # the poster picture
+    video_sig = models.CharField(max_length=32, blank=True, editable=False)  # the uploaded video itself
     orientation = models.CharField("umbo", max_length=10, choices=ORIENTATION, default="auto")
     service = models.ForeignKey(Service, null=True, blank=True, on_delete=models.SET_NULL, related_name="videos")
     featured = models.BooleanField("onyesha ukurasa wa mwanzo", default=True)
@@ -327,13 +333,27 @@ class Video(ShrinkImagesMixin, models.Model):
             if not videos.embed_url(self.url):
                 raise ValidationError({"url": "Sikuweza kusoma video kwenye link hii. Nakili link ya video yenyewe."})
 
+    def fetch_youtube_poster(self):
+        """YouTube's own cover picture, kept as our poster so it carries the watermark like every picture."""
+        from django.conf import settings
+
+        from . import videos
+        if not settings.FETCH_YOUTUBE_POSTERS or self.poster or self.file or videos.platform(self.url) != videos.YOUTUBE:
+            return False
+        data = videos.download_thumbnail(self.url)
+        if not data:
+            return False
+        self.poster = ContentFile(data, name=f"youtube-{videos.youtube_id(self.url)}.jpg")
+        return True
+
     def save(self, *args, **kwargs):
+        self.fetch_youtube_poster()
         new_upload = bool(self.file) and not getattr(self.file, "_committed", True)
         if new_upload:
             # keep the upload aside; the public file is the copy with the badge, made in the background
             self.file_original.save(self.file.name, self.file, save=False)
             self.file = None
-            self.wm_status, self.wm_sig = "pending", ""
+            self.wm_status, self.video_sig = "pending", ""
         super().save(*args, **kwargs)
         if new_upload:
             from django.db import transaction
@@ -353,10 +373,7 @@ class Video(ShrinkImagesMixin, models.Model):
 
     @property
     def thumb(self):
-        from . import videos
-        if self.poster:
-            return self.poster.url
-        return "" if self.file else videos.thumbnail_url(self.url)
+        return self.poster.url if self.poster else ""
 
     @property
     def is_vertical(self):

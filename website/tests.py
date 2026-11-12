@@ -203,7 +203,7 @@ class VideoTests(TestCase):
             v.refresh_from_db()
             self.assertEqual(v.wm_status, "done")
             self.assertTrue(v.file_original.name.startswith("originals/"))
-            self.assertTrue(v.file.name.startswith("videos/kisima-mafinga"))
+            self.assertRegex(v.file.name, r"^videos/kisima-mafinga-[0-9a-f]{8}\.mp4$")
             r = self.client.get(reverse("videos"))
             self.assertContains(r, 'data-kind="file"')
             self.assertContains(r, "/media/videos/kisima-mafinga")
@@ -345,7 +345,7 @@ class WatermarkEverywhereTests(TestCase):
                 mock.patch("website.videos.download_thumbnail", return_value=jpeg((1280, 720))) as dl:
             v = Video.objects.create(title_sw="YT", url="https://youtu.be/dQw4w9WgXcQ")
         dl.assert_called_once()
-        self.assertTrue(v.poster.name.startswith("videos/posters/youtube-dQw4w9WgXcQ"))
+        self.assertRegex(v.poster.name, r"^videos/posters/youtube-dQw4w9WgXcQ-[0-9a-f]{8}\.jpg$")
         self.assertTrue(v.poster_original and v.wm_sig)
         self.assertEqual(v.thumb, v.poster.url)  # the card shows our copy, never YouTube's own picture
 
@@ -401,3 +401,31 @@ class WatermarkRobustnessTests(TestCase):
         for p in (good1, good2):
             p.refresh_from_db()
             self.assertTrue(p.wm_sig and p.image_original)
+
+
+class SmallThingsTests(TestCase):
+    def test_favicon_ico_points_to_the_logo(self):
+        r = self.client.get("/favicon.ico")
+        self.assertEqual(r.status_code, 301)
+        self.assertIn("img/favicon", r["Location"])
+
+
+@override_settings(MEDIA_ROOT=MEDIA)
+class FreshNameTests(TestCase):
+    """A stamped picture never reuses a URL an older picture had: browsers and the CDN cache them a year."""
+
+    def test_fresh_name_keeps_readable_part_and_drops_old_tags(self):
+        from .watermark import fresh_name
+        self.assertRegex(fresh_name("services/solar-pump-shambani.jpg"), r"^solar-pump-shambani-[0-9a-f]{8}\.jpg$")
+        self.assertRegex(fresh_name("solar-pump-shambani-1a2b3c4d.jpg"), r"^solar-pump-shambani-[0-9a-f]{8}\.jpg$")
+        self.assertRegex(fresh_name("solar-pump-shambani_AbC12xY.jpg"), r"^solar-pump-shambani-[0-9a-f]{8}\.jpg$")
+        self.assertNotEqual(fresh_name("a.jpg"), fresh_name("a.jpg"))
+
+    def test_redrawing_never_reuses_a_previous_url(self):
+        p = Project.objects.create(title_sw="S", image=SimpleUploadedFile("solar.jpg", jpeg(), "image/jpeg"))
+        seen = {p.image.name}
+        for _ in range(3):
+            call_command("apply_watermarks", "--all", stdout=StringIO())
+            p.refresh_from_db()
+            self.assertNotIn(p.image.name, seen)
+            seen.add(p.image.name)

@@ -43,7 +43,7 @@ def stamp_row(model, pk, lines, sig, redo=False):
                 original.save("x.jpg", ContentFile(data), save=False)
                 changes[name + "_original"] = original.name
             old = image.name
-            image.save(Path(old).stem.split("_")[0] + ".jpg", ContentFile(watermark.stamp_image(data, lines)), save=False)
+            image.save(watermark.fresh_name(old), ContentFile(watermark.stamp_image(data, lines)), save=False)
             changes[name] = image.name
             if old != image.name:
                 image.storage.delete(old)

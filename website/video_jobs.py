@@ -53,7 +53,7 @@ def process(pk, lines=None):
                     out.write(chunk)
             watermark.stamp_video(src, dst, lines)
             with open(dst, "rb") as fh:
-                new_name = storage.save(f"videos/{slugify(video.title_sw)[:40] or 'video'}.mp4", File(fh))
+                new_name = storage.save("videos/" + watermark.fresh_name(slugify(video.title_sw)[:40] or "video", "mp4"), File(fh))
         old = video.file.name if video.file else ""
         Video.objects.filter(pk=pk).update(file=new_name, wm_status="done", video_sig=watermark.signature(lines))
         if old and old != new_name:

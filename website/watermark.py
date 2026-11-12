@@ -19,7 +19,21 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps
 log = logging.getLogger(__name__)
 
 ASSETS = Path(__file__).resolve().parent / "watermark_assets"
-VERSION = "2"  # bump when the look of the badge changes, so apply_watermarks redraws everything
+VERSION = "3"  # 3: every stamped file gets a fresh name (old URLs stayed cached with old pictures)  # bump when the look of the badge changes, so apply_watermarks redraws everything
+
+
+def fresh_name(name, ext="jpg"):
+    """A file name never used before: the readable part of `name` plus a random tag.
+
+    Pictures are cached for a year by browsers and the storage CDN, so a stamped picture must never be
+    saved under a name an older (unstamped) picture once had: the old one would keep being shown."""
+    import re
+    import uuid
+
+    stem = Path(name or "picha").stem
+    # drop tags added earlier: ours (-1a2b3c4d) and Django's (_AbC12xY); real words are kept
+    stem = re.sub(r"(-[0-9a-f]{8}|_[A-Za-z0-9]{7})+$", "", stem) or "picha"
+    return f"{stem[:50]}-{uuid.uuid4().hex[:8]}.{ext}"
 
 
 def local_phone(number):

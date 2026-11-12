@@ -60,7 +60,7 @@ class ShrinkImagesMixin:
                 continue
             lines = self._watermark_lines()
             getattr(self, name + "_original").save("x.jpg", ContentFile(data), save=False)
-            field.save(Path(field.name).stem + ".jpg", ContentFile(watermark.stamp_image(data, lines)), save=False)
+            field.save(watermark.fresh_name(field.name), ContentFile(watermark.stamp_image(data, lines)), save=False)
             self.wm_sig = watermark.signature(lines)
             stamped_any = True
         super().save(*args, **kwargs)

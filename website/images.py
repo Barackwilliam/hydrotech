@@ -30,4 +30,5 @@ def shrink(field):
         return
     data = shrunk_bytes(field.file)
     if data is not None:
-        field.save(Path(field.name).stem + ".jpg", ContentFile(data), save=False)
+        from .watermark import fresh_name
+        field.save(fresh_name(field.name), ContentFile(data), save=False)

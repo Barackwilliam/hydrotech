@@ -383,3 +383,21 @@ class WatermarkEverywhereTests(TestCase):
         with mock.patch("website.apps.close_old_connections", create=True):
             apps._stamp_missing()
         self.assertFalse(Project.objects.filter(wm_sig="").exists())
+
+
+@override_settings(MEDIA_ROOT=MEDIA)
+class WatermarkRobustnessTests(TestCase):
+    def test_one_broken_picture_does_not_stop_the_others(self):
+        good1 = Project.objects.create(title_sw="A", image=SimpleUploadedFile("a.jpg", jpeg(), "image/jpeg"))
+        bad = Project.objects.create(title_sw="Haipo", image=SimpleUploadedFile("b.jpg", jpeg(), "image/jpeg"))
+        good2 = Project.objects.create(title_sw="C", image=SimpleUploadedFile("c.jpg", jpeg(), "image/jpeg"))
+        Project.objects.update(wm_sig="", image_original="")
+        bad.refresh_from_db(); bad.image.storage.delete(bad.image.name)   # file gone from storage
+        out = StringIO()
+        call_command("apply_watermarks", stdout=out)                       # no exception: the deploy goes on
+        self.assertIn("WATERMARK FAILED", out.getvalue())
+        self.assertIn("Haipo", out.getvalue())
+        self.assertIn("1 rows with a picture still without the current badge", out.getvalue())
+        for p in (good1, good2):
+            p.refresh_from_db()
+            self.assertTrue(p.wm_sig and p.image_original)

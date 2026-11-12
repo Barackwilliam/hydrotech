@@ -1,6 +1,6 @@
 {% if slides %}
 <div class="slides" aria-hidden="true">
-  {% for url in slides %}<div class="slide{% if forloop.first %} is-active{% endif %}" style="background-image: url('{{ url }}')"></div>{% endfor %}
+  {% for url in slides %}<img class="slide{% if forloop.first %} is-active{% endif %}" src="{{ url }}" alt=""{% if not forloop.first %} loading="lazy"{% endif %}>{% endfor %}
   {% if slides|length > 1 %}<div class="slides__dots">{% for url in slides %}<span{% if forloop.first %} class="is-active"{% endif %}></span>{% endfor %}</div>{% endif %}
 </div>
 {% endif %}

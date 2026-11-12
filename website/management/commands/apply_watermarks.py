@@ -9,6 +9,7 @@ so pictures get their badge even when the host does not use build.sh. The badge 
 untouched copy kept in originals/, never on top of an older badge; pictures uploaded before watermarks
 existed become their own original.
 """
+import logging
 from pathlib import Path
 
 from django.core.files.base import ContentFile
@@ -19,6 +20,7 @@ from website import video_jobs, watermark
 from website.models import CompanyInfo, Project, Service, TeamMember, Video
 
 MODELS = (CompanyInfo, Service, Project, TeamMember, Video)
+log = logging.getLogger(__name__)
 
 
 def stamp_row(model, pk, lines, sig, redo=False):
@@ -57,15 +59,25 @@ def run(redo=False, out=None):
 
     posters = 0
     for video in Video.objects.filter(poster="", file="", file_original="").exclude(url=""):
-        if video.fetch_youtube_poster():  # YouTube cover kept as our own picture, so it gets the badge too
-            video.save()
-            posters += 1
+        try:
+            if video.fetch_youtube_poster():  # YouTube cover kept as our own picture, so it gets the badge too
+                video.save()
+                posters += 1
+        except Exception:
+            log.exception("YouTube cover failed for video %s", video.pk)
 
-    pictures = 0
+    # One bad picture (a file missing from the bucket, a file Pillow cannot read...) must not stop the
+    # others nor fail the deploy: it is reported by name and tried again next time.
+    pictures, failures = 0, []
     for model in MODELS:
         rows = model.objects.all() if redo else model.objects.exclude(wm_sig=sig)
         for pk in rows.values_list("pk", flat=True):
-            pictures += stamp_row(model, pk, lines, sig, redo)
+            try:
+                pictures += stamp_row(model, pk, lines, sig, redo)
+            except Exception as exc:
+                obj = model.objects.filter(pk=pk).first()
+                failures.append(f"{model._meta.verbose_name} #{pk} «{obj}»: {type(exc).__name__}: {exc}")
+                log.exception("Watermark failed for %s #%s", model.__name__, pk)
 
     videos = 0
     for video in Video.objects.exclude(file="", file_original=""):
@@ -73,7 +85,13 @@ def run(redo=False, out=None):
             continue
         if out:
             out(f"Video: {video.title_sw} …")
-        videos += video_jobs.process(video.pk, lines)
+        if video_jobs.process(video.pk, lines):
+            videos += 1
+        else:
+            failures.append(f"video #{video.pk} «{video}»: see the log above")
+    if out:
+        for line in failures:
+            out("WATERMARK FAILED: " + line)
     return pictures, videos, posters, lines
 
 
@@ -87,3 +105,9 @@ class Command(BaseCommand):
         pictures, videos, posters, lines = run(opts["all"], self.stdout.write)
         self.stdout.write(self.style.SUCCESS(
             f"Watermark: {pictures} pictures, {videos} videos, {posters} YouTube covers ({' | '.join(lines)})."))
+        from website.models import CompanyInfo, Project, Service, TeamMember, Video
+        from website import watermark
+        sig = watermark.signature(lines)
+        left = sum(m.objects.exclude(wm_sig=sig).exclude(**{m.watermark_fields[0]: ""}).count()
+                   for m in (CompanyInfo, Service, Project, TeamMember, Video))
+        self.stdout.write(f"Watermark: {left} rows with a picture still without the current badge.")

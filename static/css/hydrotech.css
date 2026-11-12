@@ -431,13 +431,12 @@ a.contact-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); b
 .about__img img, .vcard__media img { object-position: 50% 0; }
 .slide { background-position: 50% 0; }
 /* videos from YouTube, Facebook and Instagram cannot be stamped: the badge sits on the player instead */
-.vplayer__wm { position: absolute; z-index: 3; top: 3%; left: 50%; transform: translateX(-50%); display: none; align-items: center; gap: 12px; color: #0a0a0a; pointer-events: none; white-space: nowrap; text-transform: uppercase;
+.vplayer__wm { position: absolute; z-index: 3; top: 3%; left: 50%; transform: translateX(-50%); display: none; flex-direction: column; align-items: center; color: #0a0a0a; pointer-events: none; white-space: nowrap; text-transform: uppercase; text-align: center; line-height: 1.15;
   text-shadow: 1px 1px 0 #fff, -1px 1px 0 #fff, 1px -1px 0 #fff, -1px -1px 0 #fff, 0 1px 0 #fff, 0 -1px 0 #fff, 1px 0 0 #fff, -1px 0 0 #fff; }
 .vplayer--embed .vplayer__wm { display: flex; }
-.vplayer__wm img { width: 52px; height: 52px; }
-.vplayer__wm strong { display: block; font-size: 1.35rem; font-weight: 800; letter-spacing: .06em; line-height: 1.1; }
-.vplayer__wm small { display: block; font-size: .74rem; font-weight: 700; letter-spacing: .05em; }
-@media (max-width: 600px) { .vplayer__wm img { width: 34px; height: 34px; } .vplayer__wm strong { font-size: .95rem; } .vplayer__wm small { font-size: .58rem; } }
+.vplayer__wm strong { font-size: 1.6rem; font-weight: 800; letter-spacing: .06em; }
+.vplayer__wm small { font-size: .9rem; font-weight: 800; letter-spacing: .05em; }
+@media (max-width: 600px) { .vplayer__wm strong { font-size: 1.05rem; } .vplayer__wm small { font-size: .62rem; } }
 
 /* ---------- toasts ---------- */
 .toasts { position: fixed; top: 90px; right: 18px; z-index: 150; display: grid; gap: 10px; max-width: min(420px, calc(100% - 36px)); }

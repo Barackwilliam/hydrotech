@@ -5,8 +5,9 @@
     <button class="vplayer__btn vplayer__prev" type="button" data-vp="prev" aria-label="Previous">{% icon "chev-left" 26 %}</button>
     <div class="vplayer__frame">
       <div class="vplayer__wm" aria-hidden="true">
-        <img src="{% static 'img/logo.svg' %}" alt="">
-        <span><strong>{{ company.name }}</strong><small>{{ wm_phone }}{% if company.website_domain %} • {{ company.website_domain }}{% endif %}</small></span>
+        <strong>{{ company.name }}</strong>
+        {% if company.website_domain %}<small>{{ company.website_domain }}</small>{% endif %}
+        <small>{{ wm_phone }}</small>
       </div>
     </div>
     <button class="vplayer__btn vplayer__next" type="button" data-vp="next" aria-label="Next">{% icon "chev-right" 26 %}</button>

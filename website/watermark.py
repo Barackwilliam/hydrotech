@@ -19,7 +19,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps
 log = logging.getLogger(__name__)
 
 ASSETS = Path(__file__).resolve().parent / "watermark_assets"
-VERSION = "3"  # 3: every stamped file gets a fresh name (old URLs stayed cached with old pictures)  # bump when the look of the badge changes, so apply_watermarks redraws everything
+VERSION = "4"  # 4: three centred lines, no logo (3: fresh file names)
 
 
 def fresh_name(name, ext="jpg"):
@@ -85,46 +85,47 @@ def _draw_spaced(draw, x, y, text, font, spacing, **style):
 
 
 def badge_layer(size, lines=None):
-    """A transparent layer the size of the picture with the badge at the top centre: the logo, then the
-    name in big black capitals and the phone and website under it. No panel behind it; a thin white
-    edge round every letter keeps it readable on dark parts of the photo."""
+    """A transparent layer the size of the picture with the badge at the top centre, three centred lines:
+    MILAN HYDROTECH, then the website, then the phone. Big black capitals, no panel behind them; a thin
+    white edge round every letter keeps them readable on dark parts of the photo."""
     name, website, phone = lines or texts()
-    name, website = name.upper(), website.upper()
+    # (text, weight, size, letter spacing, line height), in hundredths of the picture's shorter side:
+    # the sizes of the preview the client approved (B)
+    rows = [(name.upper(), 800, 6.4, .35, 7.6), (website.upper(), 800, 3.6, .25, 4.8), (phone, 800, 4.0, .30, 5.4)]
+    rows = [r for r in rows if r[0]]
     w, h = size
     layer = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-    if min(w, h) < 120:  # thumbnails too small to carry readable text
+    if min(w, h) < 120 or not rows:  # thumbnails too small to carry readable text
         return layer
-    line2 = "  •  ".join(t for t in (phone, website) if t)
 
     u = min(w, h) / 100
-    for _ in range(4):  # shrink until it fits across the picture
-        f1, f2 = _font(800, 6.2 * u), _font(700, 3.3 * u)
-        sp1, sp2 = .35 * u, .22 * u
-        logo = _icon("logo.png", 13 * u)
-        ph = _icon("phone.png", 3.4 * u) if phone else None
-        gap = 2.4 * u
-        width2 = (ph.width + 1.2 * u if ph else 0) + _spaced_width(f2, line2, sp2)
-        bw = logo.width + gap + max(_spaced_width(f1, name, sp1), width2)
-        if bw <= w * 0.92:
+    for _ in range(4):  # shrink until the widest line fits across the picture
+        fonts = [_font(weight, k * u) for _, weight, k, _, _ in rows]
+        spacing = [sp * u for _, _, _, sp, _ in rows]
+        ph = _icon("phone.png", 3.8 * u) if phone else None
+        widths = []
+        for (text, *_), f, sp in zip(rows, fonts, spacing):
+            extra = ph.width + 1.2 * u if (ph and text == phone) else 0
+            widths.append(extra + _spaced_width(f, text, sp))
+        if max(widths) <= w * 0.92:
             break
-        u *= w * 0.92 / bw
-    x, y = (w - bw) / 2, 3 * min(w, h) / 100
+        u *= w * 0.92 / max(widths)
+    heights = [lh * u for *_, lh in rows]
+
     d = ImageDraw.Draw(layer)
     edge = dict(stroke_width=max(1, int(.45 * u)), stroke_fill=(255, 255, 255, 235))
     ink = dict(fill=(10, 10, 10, 255), **edge)
-
-    layer.alpha_composite(logo, (int(x), int(y)))
-    tx = x + logo.width + gap
-    _draw_spaced(d, tx, y + logo.height * .36, name, f1, sp1, **ink)
-    cy = y + logo.height * .78
-    cx = tx
-    if ph:
-        halo = Image.new("RGBA", ph.size, (255, 255, 255, 235))
-        halo.putalpha(ph.split()[3].filter(ImageFilter.MaxFilter(5)))
-        layer.alpha_composite(halo, (int(cx), int(cy - ph.height / 2)))
-        layer.alpha_composite(ph, (int(cx), int(cy - ph.height / 2)))
-        cx += ph.width + 1.2 * u
-    _draw_spaced(d, cx, cy, line2, f2, sp2, **ink)
+    y = 3 * min(w, h) / 100
+    for (text, *_), f, sp, width, lh in zip(rows, fonts, spacing, widths, heights):
+        x, cy = (w - width) / 2, y + lh / 2
+        if ph and text == phone:
+            halo = Image.new("RGBA", ph.size, (255, 255, 255, 235))
+            halo.putalpha(ph.split()[3].filter(ImageFilter.MaxFilter(5)))
+            layer.alpha_composite(halo, (int(x), int(cy - ph.height / 2)))
+            layer.alpha_composite(ph, (int(x), int(cy - ph.height / 2)))
+            x += ph.width + 1.2 * u
+        _draw_spaced(d, x, cy, text, f, sp, **ink)
+        y += lh
     return layer
 
 

@@ -20,8 +20,8 @@ COMPANY = {
     "name": "Milan Hydrotech",
     "founded_year": 2024,
     "ceo_name": "Godfrey S. Mwambage",
-    "tagline_sw": "Wataalamu wa uchimbaji wa visima vya maji kwa mashine kubwa, utafiti wa maji ardhini, pampu na solar",
-    "tagline_en": "Specialists in borehole drilling with heavy rigs, groundwater survey, pumps and solar",
+    "tagline_sw": "Wataalamu wa uchimbaji wa visima vya maji kwa mashine kubwa, utafiti wa maji ardhini, upimaji wa wingi wa maji (pump test), pampu na solar",
+    "tagline_en": "Specialists in borehole drilling with heavy rigs, groundwater survey, water yield testing (pump test), pumps and solar",
     "about_sw": (
         "Milan Hydrotech ni kampuni ya Kitanzania yenye makao makuu Mafinga, mkoani Iringa. Tunachimba visima "
         "vya maji kwa mashine kubwa za kisasa na kutoa huduma zote zinazohusiana na maji ya ardhini.\n"

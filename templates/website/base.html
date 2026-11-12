@@ -27,7 +27,10 @@
     "telephone": "{{ company.phone_1_tel }}",
     {% if company.email %}"email": "{{ company.email }}",{% endif %}
     "address": {"@type": "PostalAddress", "addressLocality": "Mafinga", "addressRegion": "Iringa", "addressCountry": "TZ"},
-    "areaServed": ["Mbeya", "Njombe", "Iringa", "Dodoma", "Singida"]
+    "areaServed": ["Mbeya", "Njombe", "Iringa", "Dodoma", "Singida"],
+    "hasOfferCatalog": {"@type": "OfferCatalog", "name": "{{ t.services_title|escapejs }}", "itemListElement": [
+      {% for s in nav_services %}{"@type": "Offer", "itemOffered": {"@type": "Service", "name": "{% tr s 'title' as st %}{{ st|escapejs }}", "url": "{{ site_url }}{{ s.get_absolute_url }}"}}{% if not forloop.last %},{% endif %}
+      {% endfor %}]}
   }
   </script>
   {% block head %}{% endblock %}
@@ -84,7 +87,7 @@
       <div>
         <h3>{{ t.nav_services }}</h3>
         <ul class="footer__links">
-          {% for s in nav_services|slice:":6" %}<li><a href="{{ s.get_absolute_url }}">{% tr s "title" %}</a></li>{% endfor %}
+          {% for s in nav_services %}<li><a href="{{ s.get_absolute_url }}">{% tr s "title" %}</a></li>{% endfor %}
         </ul>
       </div>
       <div>

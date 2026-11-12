@@ -281,3 +281,43 @@ class WatermarkTests(TestCase):
         call_command("seed_site", stdout=StringIO())
         self.assertFalse(Project.objects.filter(wm_sig="").exists())
         self.assertFalse(Service.objects.exclude(image="").filter(wm_sig="").exists())
+
+
+class PumpTestEverywhereTests(TestCase):
+    """The pump test (water yield) service shows wherever services are listed."""
+
+    @classmethod
+    def setUpTestData(cls):
+        with override_settings(MEDIA_ROOT=MEDIA):
+            call_command("seed_site", stdout=StringIO())
+
+    def test_listed_on_every_page_footer_and_home(self):
+        url = reverse("service_detail", args=["pump-test"])
+        for name in ["home", "about", "services", "projects", "videos", "contact"]:
+            with self.subTest(page=name):
+                r = self.client.get(reverse(name))
+                self.assertContains(r, f'href="{url}"')                       # footer (and tiles)
+                self.assertContains(r, "Upimaji wa Wingi wa Maji (Pump Test)")
+        home = self.client.get(reverse("home"))
+        self.assertContains(home, "Upimaji wa wingi wa maji (pump test)")        # hero highlights + tagline
+        self.assertContains(home, '"name": "Upimaji wa Wingi wa Maji (Pump Test)"')  # Google service list
+
+    def test_in_contact_form_and_english(self):
+        self.assertContains(self.client.get(reverse("contact")), ">Upimaji wa Wingi wa Maji (Pump Test)</option>")
+        self.client.get(reverse("set_language", args=["en"]))
+        r = self.client.get(reverse("home"))
+        self.assertContains(r, "Pump Test (Yield Test)")
+        self.assertContains(r, "Water yield testing (pump test)")
+
+    def test_old_tagline_is_updated_but_a_rewritten_one_is_kept(self):
+        import importlib
+        from django.apps import apps as django_apps
+        from .models import CompanyInfo
+        mig = importlib.import_module("website.migrations.0004_tagline_pump_test")
+        c = CompanyInfo.load()
+        c.tagline_sw, c.tagline_en = mig.OLD["tagline_sw"], "Our own words"
+        c.save()
+        mig.forwards(django_apps, None)
+        c.refresh_from_db()
+        self.assertEqual(c.tagline_sw, mig.NEW["tagline_sw"])
+        self.assertEqual(c.tagline_en, "Our own words")

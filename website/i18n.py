@@ -37,8 +37,8 @@ UI = {
     "hero_title_a": ("Maji safi,", "Clean water,"),
     "hero_title_b": ("karibu na wewe.", "close to you."),
     "trust": (
-        ["Mtaalamu wa maji ardhini", "Mashine kubwa za kisasa", "Pampu na solar"],
-        ["Our own hydrogeologist", "Heavy modern rigs", "Pumps and solar"],
+        ["Mtaalamu wa maji ardhini", "Mashine kubwa za kisasa", "Upimaji wa wingi wa maji (pump test)", "Pampu na solar"],
+        ["Our own hydrogeologist", "Heavy modern rigs", "Water yield testing (pump test)", "Pumps and solar"],
     ),
     "badge_survey": ("Utafiti kabla ya kuchimba", "Survey before drilling"),
     "badge_regions": ("Mikoa tunayohudumia", "Regions we serve"),

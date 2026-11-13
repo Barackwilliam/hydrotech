@@ -202,8 +202,6 @@
   var frame = player.querySelector(".vplayer__frame");
   var title = player.querySelector(".vplayer__title");
   var text = player.querySelector(".vplayer__text");
-  var link = player.querySelector(".vplayer__link");
-  var names = { youtube: "YouTube", facebook: "Facebook", instagram: "Instagram" };
   var index = 0, lastFocus = null;
 
   function load(i) {
@@ -226,9 +224,6 @@
     player.classList.toggle("vplayer--tall", c.getAttribute("data-vertical") === "1");
     title.textContent = c.getAttribute("data-title");
     text.textContent = c.getAttribute("data-text") || "";
-    var href = c.getAttribute("data-link");
-    link.hidden = !href;
-    if (href) { link.href = href; link.querySelector("span").textContent = names[kind] || ""; }
   }
   function open(i) {
     lastFocus = document.activeElement;

@@ -507,3 +507,19 @@ class HomePageTowerTests(TestCase):
         Project.objects.filter(title_sw=mig.TITLE).update(order=26, featured=False)   # as on the live site
         mig.forwards(django_apps, None)
         self.assertEqual(self.client.get(reverse("home")).context["projects"][0].title_sw, mig.TITLE)
+
+
+
+class NoSourceLabelsTests(TestCase):
+    """Videos show no 'YouTube / Facebook / Instagram' labels and no 'watch on ...' link."""
+
+    def test_cards_and_player_carry_no_platform_names(self):
+        from .models import Video
+        Video.objects.create(title_sw="Rig", url="https://www.facebook.com/milan/videos/1/")
+        Video.objects.create(title_sw="Reel", url="https://www.instagram.com/reel/C8abcDEF12/")
+        Video.objects.create(title_sw="YT", url="https://youtu.be/dQw4w9WgXcQ")
+        for name in ["home", "videos"]:
+            with self.subTest(page=name):
+                html = self.client.get(reverse(name)).content.decode()
+                for word in ["vcard__badge", "vplayer__link", "Tazama kwenye", ">Facebook<", ">Instagram<", ">YouTube<"]:
+                    self.assertNotIn(word, html)

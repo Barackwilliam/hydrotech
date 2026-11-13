@@ -31,7 +31,6 @@ UI = {
     "see_all_videos": ("Ona video zote", "See all videos"),
     "play": ("Cheza video", "Play video"),
     "no_videos": ("Video zitawekwa hivi karibuni.", "Videos are coming soon."),
-    "watch_on": ("Tazama kwenye", "Watch on"),
     "close": ("Funga", "Close"),
     # modern home extras
     "hero_title_a": ("Maji safi,", "Clean water,"),

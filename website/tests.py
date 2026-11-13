@@ -485,3 +485,25 @@ class SeedVideoTests(TestCase):
         with self.captureOnCommitCallbacks(execute=True):
             call_command("seed_site", stdout=StringIO())      # a second run adds nothing
         self.assertEqual(Video.objects.count(), 2)
+
+
+
+class HomePageTowerTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        with override_settings(MEDIA_ROOT=MEDIA):
+            call_command("seed_site", stdout=StringIO())
+
+    def test_solar_tower_is_first_in_our_work_on_home(self):
+        r = self.client.get(reverse("home"))
+        self.assertEqual(r.context["projects"][0].title_sw, "Mnara wa chuma wa matenki na paneli za solar")
+        self.assertEqual(r.context["hero_second"].title_sw, "Mnara wa chuma wa matenki na paneli za solar")
+        self.assertContains(r, "Mnara wa chuma wa matenki na paneli za solar")
+
+    def test_migration_moves_an_existing_tower_to_the_front(self):
+        import importlib
+        from django.apps import apps as django_apps
+        mig = importlib.import_module("website.migrations.0007_solar_tower_first_on_home")
+        Project.objects.filter(title_sw=mig.TITLE).update(order=26, featured=False)   # as on the live site
+        mig.forwards(django_apps, None)
+        self.assertEqual(self.client.get(reverse("home")).context["projects"][0].title_sw, mig.TITLE)

@@ -187,6 +187,9 @@ PROJECTS = [
     ("mnara-wa-tenki-na-solar.jpg", "Mnara wa chuma wa matenki na paneli za solar", "Steel tank tower with solar panels", "tenki-za-maji", True),
 ]
 
+# Shown first in "Our work" on the home page (order 0; the newest of equal order comes first).
+FIRST_ON_HOME = "mnara-wa-tenki-na-solar.jpg"
+
 VIDEOS_DIR = Path(__file__).resolve().parents[2] / "seed_videos"
 VIDEOS = [
     # (file, title_sw, title_en, service slug)
@@ -239,8 +242,8 @@ class Command(BaseCommand):
         for i, (image, title_sw, title_en, slug, featured) in enumerate(PROJECTS):
             if Project.objects.filter(title_sw=title_sw).exists():
                 continue
-            project = Project(title_sw=title_sw, title_en=title_en, service=services.get(slug),
-                              featured=featured, order=i)
+            project = Project(title_sw=title_sw, title_en=title_en, service=services.get(slug), featured=featured,
+                              order=0 if image == FIRST_ON_HOME else i)
             attach(project, "image", image)
             project.save()
 

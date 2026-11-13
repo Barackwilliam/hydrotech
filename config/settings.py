@@ -169,6 +169,8 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 VIDEO_MAX_MB = int(env("VIDEO_MAX_MB", "50"))
 # Keep YouTube's cover picture as our own (watermarked) poster. Off in tests: no network there.
 FETCH_YOUTUBE_POSTERS = env_bool("FETCH_YOUTUBE_POSTERS", "test" not in sys.argv)
+# seed_site adds the client's videos and burns the watermark in at once (off in tests: it takes seconds).
+SEED_PROCESS_VIDEOS = env_bool("SEED_PROCESS_VIDEOS", "test" not in sys.argv)
 # Stamp missing watermarks in the background whenever the web server starts.
 WATERMARK_ON_START = env_bool("WATERMARK_ON_START", True)
 

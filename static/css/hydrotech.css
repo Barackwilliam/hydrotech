@@ -350,7 +350,8 @@ a.contact-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); b
 .vcard--instagram .vcard__ph { background: linear-gradient(135deg, #4f5bd5, #962fbf 40%, #d62976 70%, #fa7e1e); color: rgba(255,255,255,.3); }
 .vcard__shade { position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(4,25,46,.35) 0%, transparent 30%, transparent 45%, rgba(4,25,46,.92) 100%); transition: background .4s; }
 .vcard:hover .vcard__shade { background: linear-gradient(180deg, rgba(4,25,46,.45) 0%, rgba(4,25,46,.15) 40%, rgba(4,25,46,.95) 100%); }
-.vcard__badge { position: absolute; top: 14px; left: 14px; display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px 6px 9px; border-radius: 999px; font-size: .75rem; font-weight: 700; letter-spacing: .02em; background: rgba(4,25,46,.55); border: 1px solid rgba(255,255,255,.18); backdrop-filter: blur(10px); }
+/* the source label sits above the title: the top of the picture carries the watermark */
+.vcard__badge { position: static; align-self: flex-start; margin-bottom: 4px; display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px 6px 9px; border-radius: 999px; font-size: .75rem; font-weight: 700; letter-spacing: .02em; background: rgba(4,25,46,.55); border: 1px solid rgba(255,255,255,.18); backdrop-filter: blur(10px); }
 .vcard--youtube .vcard__badge .icon { color: #ff3b3b; }
 .vcard--facebook .vcard__badge .icon { color: #5aa2ff; }
 .vcard--instagram .vcard__badge .icon { color: #ff7ab6; }

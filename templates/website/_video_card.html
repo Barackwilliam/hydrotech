@@ -10,9 +10,9 @@
     {% else %}<span class="vcard__ph">{% icon v.kind 56 %}</span>{% endif %}
   </span>
   <span class="vcard__shade"></span>
-  <span class="vcard__badge">{% icon v.kind 15 %}{% if v.kind == "youtube" %}YouTube{% elif v.kind == "facebook" %}Facebook{% elif v.kind == "instagram" %}Instagram{% else %}Video{% endif %}</span>
   <span class="vcard__play">{% icon "play" 30 %}</span>
   <span class="vcard__body">
+  <span class="vcard__badge">{% icon v.kind 15 %}{% if v.kind == "youtube" %}YouTube{% elif v.kind == "facebook" %}Facebook{% elif v.kind == "instagram" %}Instagram{% else %}Video{% endif %}</span>
     {% if v.service %}<small>{% tr v.service "title" %}</small>{% endif %}
     <strong>{% tr v "title" %}</strong>
   </span>

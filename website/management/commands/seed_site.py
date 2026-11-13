@@ -12,7 +12,7 @@ from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from website.models import CompanyInfo, Project, Region, Service, TeamMember
+from website.models import CompanyInfo, Project, Region, Service, TeamMember, Video
 
 IMAGES = Path(__file__).resolve().parents[2] / "seed_images"
 
@@ -184,6 +184,14 @@ PROJECTS = [
     ("minara-ya-matenki-mifano.jpg", "Mifano ya minara ya matenki tunayojenga", "Tank tower designs we build", "tenki-za-maji", False),
     ("mapipa-ya-maji-ya-mvua.jpg", "Kuhifadhi maji ya mvua kwenye mapipa", "Storing rain water in barrels", "tenki-za-maji", False),
     ("maji-ni-uhai.jpg", "Maji ni uhai: maji safi na salama", "Water is life: clean, safe water", "ubora-wa-maji", False),
+    ("mnara-wa-tenki-na-solar.jpg", "Mnara wa chuma wa matenki na paneli za solar", "Steel tank tower with solar panels", "tenki-za-maji", True),
+]
+
+VIDEOS_DIR = Path(__file__).resolve().parents[2] / "seed_videos"
+VIDEOS = [
+    # (file, title_sw, title_en, service slug)
+    ("rig-ikichimba-maji-yakitoka.mp4", "Rig yetu ikichimba kisima, maji yakitoka", "Our rig drilling a borehole, water flowing", "uchimbaji-visima"),
+    ("maji-yakibubujika-wakati-wa-kuchimba.mp4", "Maji yakibubujika wakati wa kuchimba", "Water gushing out while drilling", "uchimbaji-visima"),
 ]
 
 
@@ -236,6 +244,29 @@ class Command(BaseCommand):
             attach(project, "image", image)
             project.save()
 
+        new_videos = []
+        for i, (filename, title_sw, title_en, slug) in enumerate(VIDEOS):
+            path = VIDEOS_DIR / filename
+            if Video.objects.filter(title_sw=title_sw).exists() or not path.exists():
+                continue
+            video = Video(title_sw=title_sw, title_en=title_en, service=services.get(slug), order=i,
+                          wm_status="pending", featured=True)
+            # kept as the untouched original; the copy with the watermark is made below, after saving
+            video.file_original.save(filename, ContentFile(path.read_bytes()), save=False)
+            video.save()
+            new_videos.append(video.pk)
+
+        transaction.on_commit(lambda: self._stamp_videos(new_videos))
         self.stdout.write(self.style.SUCCESS(
             f"Done: {Service.objects.count()} services, {TeamMember.objects.count()} team members, "
-            f"{Project.objects.count()} projects, {Region.objects.count()} regions."))
+            f"{Project.objects.count()} projects, {Video.objects.count()} videos, {Region.objects.count()} regions."))
+
+    def _stamp_videos(self, pks):
+        from django.conf import settings
+
+        from website import video_jobs
+        if not settings.SEED_PROCESS_VIDEOS:
+            return
+        for pk in pks:
+            ok = video_jobs.process(pk)
+            self.stdout.write(f"Video {pk}: {'watermark done' if ok else 'watermark FAILED'}")

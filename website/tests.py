@@ -41,7 +41,7 @@ class SiteTests(TestCase):
         before = (Service.objects.count(), Project.objects.count())
         call_command("seed_site", stdout=StringIO())
         self.assertEqual(before, (Service.objects.count(), Project.objects.count()))
-        self.assertEqual(before, (9, 25))
+        self.assertEqual(before, (9, 26))
 
     def test_language_switch(self):
         r = self.client.get(reverse("set_language", args=["en"]) + "?next=/huduma/")
@@ -456,8 +456,32 @@ class ClientRequestTests(TestCase):
 
     def test_all_client_pictures_in_projects_and_survey_has_its_picture(self):
         r = self.client.get(reverse("projects"))
-        self.assertEqual(len(r.context["projects"]), 25)
+        self.assertEqual(len(r.context["projects"]), 26)
         for title in ["Utafiti wa maji ardhini, Dodoma", "Rig ya kuchimba visima virefu", "Maji ni uhai: maji safi na salama"]:
             self.assertContains(r, title)
         self.assertTrue(Service.objects.get(slug="utafiti-wa-maji-ardhini").image)
         self.assertEqual(Project.objects.filter(service__slug="uchimbaji-visima").count(), 10)
+
+
+
+@override_settings(MEDIA_ROOT=MEDIA, SEED_PROCESS_VIDEOS=True)
+class SeedVideoTests(TestCase):
+    def test_client_videos_get_watermark_orientation_and_cover(self):
+        from .models import Video
+        with self.captureOnCommitCallbacks(execute=True):
+            call_command("seed_site", stdout=StringIO())
+        videos = Video.objects.order_by("order")
+        self.assertEqual(videos.count(), 2)
+        for v in videos:
+            with self.subTest(video=v.title_sw):
+                self.assertEqual(v.wm_status, "done")
+                self.assertTrue(v.file_original.name.startswith("originals/"))
+                self.assertRegex(v.file.name, r"^videos/.+-[0-9a-f]{8}\.mp4$")
+                self.assertEqual(v.orientation, "portrait")       # filmed upright on a phone
+                self.assertTrue(v.poster and v.poster_original and v.wm_sig)  # cover from the video, stamped
+        r = self.client.get(reverse("videos"))
+        self.assertContains(r, "Rig yetu ikichimba kisima, maji yakitoka")
+        self.assertContains(r, "vcard--tall")
+        with self.captureOnCommitCallbacks(execute=True):
+            call_command("seed_site", stdout=StringIO())      # a second run adds nothing
+        self.assertEqual(Video.objects.count(), 2)

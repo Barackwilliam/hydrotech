@@ -136,6 +136,23 @@ p { margin: 0 0 1em; }
 .stat strong { display: block; font-size: 2rem; font-weight: 800; color: var(--ink); line-height: 1; letter-spacing: -.03em; }
 .stat div > span { font-size: .85rem; color: var(--muted); font-weight: 600; }
 
+/* ---------- brand card with the logo ---------- */
+.brandcard-wrap { padding: 56px 0 0; }
+.brandcard { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: center; gap: 40px; padding: 36px 44px; background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow); position: relative; overflow: hidden; }
+.brandcard::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 5px; background: linear-gradient(90deg, var(--cyan), var(--blue), var(--accent)); }
+.brandcard__logo img { width: 100%; height: auto; display: block; }
+.brandcard__body h2 { margin-bottom: .3em; }
+.brandcard__body > p:not(.eyebrow) { color: var(--muted); font-size: 1.05rem; }
+.brandcard__facts { list-style: none; padding: 0; margin: 0 0 22px; display: flex; flex-wrap: wrap; gap: 8px 22px; font-weight: 600; color: var(--ink); }
+.brandcard__facts li { display: inline-flex; align-items: center; gap: 8px; }
+.brandcard__facts .icon { color: var(--accent); }
+.brandcard__actions { display: flex; flex-wrap: wrap; gap: 12px; }
+@media (max-width: 860px) {
+  .brandcard { grid-template-columns: 1fr; gap: 22px; padding: 28px 22px; text-align: center; }
+  .brandcard__logo { max-width: 380px; margin: 0 auto; }
+  .brandcard .eyebrow, .brandcard__facts, .brandcard__actions { justify-content: center; }
+}
+
 /* ---------- sections ---------- */
 .section { position: relative; padding: 110px 0; }
 .section--soft { background: linear-gradient(180deg, var(--bg), #e9f2fa); }

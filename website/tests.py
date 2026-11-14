@@ -523,3 +523,10 @@ class NoSourceLabelsTests(TestCase):
                 html = self.client.get(reverse(name)).content.decode()
                 for word in ["vcard__badge", "vplayer__link", "Tazama kwenye", ">Facebook<", ">Instagram<", ">YouTube<"]:
                     self.assertNotIn(word, html)
+
+
+class BrandCardTests(TestCase):
+    def test_home_has_a_card_with_the_logo(self):
+        r = self.client.get(reverse("home"))
+        self.assertContains(r, 'class="brandcard reveal"')
+        self.assertContains(r, "img/logo-full")

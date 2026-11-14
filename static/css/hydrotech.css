@@ -74,11 +74,12 @@ p { margin: 0 0 1em; }
 .header { position: fixed; inset: 0 0 auto 0; z-index: 80; height: var(--header-h); display: flex; align-items: center; transition: background .3s, box-shadow .3s, height .3s; }
 .header.is-scrolled { background: rgba(4, 25, 46, .82); backdrop-filter: blur(14px) saturate(1.4); box-shadow: 0 10px 30px -18px rgba(0,0,0,.6); --header-h: 66px; }
 .header__inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.brand { display: flex; align-items: center; gap: 10px; color: #fff; }
-.brand img { filter: drop-shadow(0 4px 10px rgba(34,195,230,.35)); }
-.brand__text { display: flex; flex-direction: column; line-height: 1.1; white-space: nowrap; }
-.brand__text strong { font-size: 1.15rem; font-weight: 800; letter-spacing: -.02em; }
-.brand__text small { color: var(--accent-2); font-weight: 700; font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; margin-top: 3px; }
+.brand { display: flex; align-items: center; color: #fff; flex: none; }
+/* the logo has a white background: it sits on a white rounded card over the dark header and footer */
+.brand__logo { display: block; height: 60px; width: auto; padding: 4px 10px; background: #fff; border-radius: 14px; box-shadow: 0 6px 18px -6px rgba(0,0,0,.45); transition: height .3s; }
+.header.is-scrolled .brand__logo { height: 52px; }
+.brand--footer .brand__logo { height: 92px; padding: 6px 14px; border-radius: 18px; }
+.lang-modal__card .lang-modal__logo { width: 200px; height: auto; margin: 0 auto 14px; }
 .nav { display: flex; align-items: center; gap: 2px; }
 .nav > a:not(.btn) { position: relative; white-space: nowrap; padding: .55em .8em; color: rgba(255,255,255,.82); font-weight: 600; font-size: .93rem; border-radius: 999px; transition: color .2s, background .2s; }
 .nav > a:not(.btn):hover { color: #fff; background: rgba(255,255,255,.08); }
@@ -575,6 +576,7 @@ body.nav-open .header { backdrop-filter: none; background: transparent; box-shad
   .form { grid-template-columns: 1fr; padding: 24px; }
   .service-row__body { padding: 26px 24px; }
   .footer__grid { grid-template-columns: 1fr; gap: 32px; }
-  .brand__text strong { font-size: 1.02rem; }
+  .brand__logo { height: 50px; padding: 3px 8px; border-radius: 12px; }
+  .header.is-scrolled .brand__logo { height: 46px; }
   .head { margin-bottom: 36px; }
 }

@@ -18,7 +18,7 @@ urlpatterns = [
     path("sitemap.xml", sitemap, {"sitemaps": {"pages": StaticSitemap, "services": ServiceSitemap}},
          name="sitemap"),
     path("robots.txt", views.robots_txt),
-    path("favicon.ico", lambda request: HttpResponsePermanentRedirect(static_url("img/favicon.svg"))),
+    path("favicon.ico", lambda request: HttpResponsePermanentRedirect(static_url("img/favicon.png"))),
     path("", include("website.urls")),
 ]
 if settings.DEBUG:

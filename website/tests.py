@@ -407,7 +407,7 @@ class SmallThingsTests(TestCase):
     def test_favicon_ico_points_to_the_logo(self):
         r = self.client.get("/favicon.ico")
         self.assertEqual(r.status_code, 301)
-        self.assertIn("img/favicon", r["Location"])
+        self.assertIn("img/favicon.png", r["Location"])
 
 
 @override_settings(MEDIA_ROOT=MEDIA)
